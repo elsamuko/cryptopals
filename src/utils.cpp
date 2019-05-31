@@ -85,3 +85,44 @@ std::string utils::hexToBase64( const std::string& hex ) {
     std::string base64 = binaryToBase64( binary );
     return base64;
 }
+
+std::vector<uint8_t> utils::XOR( const std::vector<uint8_t>& first, const std::vector<uint8_t>& second ) {
+    size_t size = first.size();
+    std::vector<uint8_t> rv( size, 0 );
+
+    if( first.size() != second.size() ) {
+        LOG( "Error: input sizes are not equal!" );
+        return rv;
+    }
+
+    for( size_t i = 0; i < size; ++i ) {
+        rv[i] = first[i] xor second[i];
+    }
+
+    return rv;
+}
+
+std::string utils::binaryToHex( const std::vector<uint8_t>& bytes ) {
+    static const char table16[17] = "0123456789abcdef";
+
+    std::string rv( 2 * bytes.size(), '\0' );
+    size_t pos = 0;
+
+    for( const uint8_t byte : bytes ) {
+        int a = ( byte & 0b11110000 ) >> 4;
+        int b = ( byte & 0b00001111 );
+        rv[2 * pos + 0] = table16[a];
+        rv[2 * pos + 1] = table16[b];
+        ++pos;
+    }
+
+    return rv;
+}
+
+std::string utils::XOR( const std::string& first, const std::string& second ) {
+    std::vector<uint8_t> vfirst = hexToBinary( first );
+    std::vector<uint8_t> vsecond = hexToBinary( second );
+    std::vector<uint8_t> vres = XOR( vfirst, vsecond );
+    std::string rv = binaryToHex( vres );
+    return rv;
+}
