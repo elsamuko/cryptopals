@@ -7,6 +7,8 @@ SOURCES += $${SRC_DIR}/cryptopals.cpp
 
 HEADERS += $${SRC_DIR}/utils.hpp
 SOURCES += $${SRC_DIR}/utils.cpp
+HEADERS += $${SRC_DIR}/log.hpp
+SOURCES += $${SRC_DIR}/log.cpp
 
 include( setup.pri )
 linux: include( linux.pri )
