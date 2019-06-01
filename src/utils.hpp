@@ -26,4 +26,5 @@ Bytes XOR( const Bytes& first, const uint8_t& key );
 
 float isEnglishText( const Bytes& text );
 
+std::vector<Bytes> fromHexFile( const std::string& filename );
 }

@@ -2,6 +2,7 @@
 
 #include <map>
 #include <cmath>
+#include <fstream>
 
 uint8_t utils::parseHex( const char& hex ) {
     if( hex >= '0' && hex <= '9' ) {
@@ -162,6 +163,22 @@ Bytes utils::XOR( const Bytes& first, const uint8_t& key ) {
 
     for( size_t i = 0; i < size; ++i ) {
         rv[i] = first[i] xor key;
+    }
+
+    return rv;
+}
+
+std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
+    std::vector<Bytes> rv;
+    std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
+
+    if( !file ) { return rv; }
+
+    std::string line;
+    rv.reserve( 32 );
+
+    while( std::getline( file, line ) ) {
+        rv.emplace_back( hexToBinary( line ) );
     }
 
     return rv;
