@@ -90,16 +90,12 @@ std::string utils::hexToBase64( const std::string& hex ) {
 }
 
 Bytes utils::XOR( const Bytes& first, const Bytes& second ) {
-    size_t size = first.size();
-    Bytes rv( size, 0 );
+    size_t size1 = first.size();
+    size_t size2 = second.size();
+    Bytes rv( size1, 0 );
 
-    if( first.size() != second.size() ) {
-        LOG( "Error: input sizes are not equal!" );
-        return rv;
-    }
-
-    for( size_t i = 0; i < size; ++i ) {
-        rv[i] = first[i] xor second[i];
+    for( size_t i = 0; i < size1; ++i ) {
+        rv[i] = first[i] xor second[i % size2];
     }
 
     return rv;
