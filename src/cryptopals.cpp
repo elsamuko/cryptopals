@@ -48,11 +48,41 @@ void challenge1_3() {
     CHECK_EQ( printable, expected );
 }
 
+// https://cryptopals.com/sets/1/challenges/4
+void challenge1_4() {
+    LOG( "Running challenge 1.4" );
+    std::vector<Bytes> lines = utils::fromHexFile( "1_4.txt" );
+
+    float best = 0.f;
+    Bytes bestDecrypted;
+    uint8_t bestKey = 0;
+    size_t bestLine = 0;
+
+    for( size_t i = 0; i < lines.size(); ++i ) {
+        for( uint8_t key = 0; key != 255; ++key ) {
+            Bytes decrypted = utils::XOR( lines[i], key );
+            float prob = utils::isEnglishText( decrypted );
+
+            if( prob > best ) {
+                best = prob;
+                bestKey = key;
+                bestLine = i;
+                bestDecrypted = decrypted;
+            }
+        }
+    }
+
+    std::string printable( ( const char* )bestDecrypted.data(), bestDecrypted.size() );
+    std::string expected = "Now that the party is jumping\n";
+    CHECK_EQ( printable, expected );
+}
+
 int main() {
 
     challenge1_1();
     challenge1_2();
     challenge1_3();
+    challenge1_4();
 
     return 0;
 }
