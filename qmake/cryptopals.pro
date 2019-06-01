@@ -1,5 +1,5 @@
 MAIN_DIR =..
-DESTDIR=$${MAIN_DIR}
+DESTDIR=$${MAIN_DIR}/bin
 SRC_DIR  =../src
 INCLUDEPATH += $${SRC_DIR}
 
