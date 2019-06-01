@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <map>
 #include <cfloat>
+#include <future>
 
 // https://cryptopals.com/sets/1/challenges/1
 void challenge1_1() {
@@ -41,11 +42,24 @@ void challenge1_4() {
     LOG( "Running challenge 1.4" );
     std::vector<Bytes> lines = utils::fromHexFile( "1_4.txt" );
 
+    // run calculations async
+    std::vector<std::future<utils::Guess>> guesses;
+    guesses.reserve( lines.size() );
+
+    for( size_t i = 0; i < lines.size(); ++i ) {
+        Bytes line = lines[i];
+        guesses.emplace_back( std::async( std::launch::async, [line] {
+            utils::Guess guess = utils::guessKey( line );
+            return guess;
+        } ) );
+    }
+
+    // then find best guess
     utils::Guess best{};
     size_t bestLine = 0;
 
-    for( size_t i = 0; i < lines.size(); ++i ) {
-        utils::Guess guess = utils::guessKey( lines[i] );
+    for( size_t i = 0; i < guesses.size(); ++i ) {
+        utils::Guess guess = guesses[i].get();
 
         if( guess.probability > best.probability ) {
             best = guess;
