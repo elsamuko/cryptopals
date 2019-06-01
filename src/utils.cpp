@@ -131,12 +131,15 @@ std::string utils::XOR( const std::string& first, const std::string& second ) {
 
 // higher is better
 float utils::isEnglishText( const Bytes& text ) {
-    size_t size = text.size();
-    std::map<char, float> freqs;
+    std::map<int, float> freqs;
 
     for( const uint8_t c : text ) {
-        if( isalpha( c ) ) {
-            freqs[::tolower( c )]++;
+        if( std::isalpha( c ) ) {
+            if( std::isupper( c ) ) {
+                freqs[std::tolower( c )] += 1;
+            } else {
+                freqs[std::tolower( c )] += 2;
+            }
         }
     }
 
