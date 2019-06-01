@@ -28,22 +28,10 @@ void challenge1_3() {
     std::string secret = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     Bytes bytes = utils::hexToBinary( secret );
 
-    float best = 0.f;
-    Bytes bestDecrypted;
-    uint8_t bestKey = 0;
+    utils::Guess guess = utils::guessKey( bytes );
 
-    for( uint8_t key = 0; key != 255; ++key ) {
-        Bytes decrypted = utils::XOR( bytes, key );
-        float prob = utils::isEnglishText( decrypted );
-
-        if( prob > best ) {
-            best = prob;
-            bestKey = key;
-            bestDecrypted = decrypted;
-        }
-    }
-
-    std::string printable( ( const char* )bestDecrypted.data(), bestDecrypted.size() );
+    Bytes decrypted = utils::XOR( bytes, guess.key );
+    std::string printable( ( const char* )decrypted.data(), decrypted.size() );
     std::string expected = "Cooking MC's like a pound of bacon";
     CHECK_EQ( printable, expected );
 }
@@ -53,26 +41,20 @@ void challenge1_4() {
     LOG( "Running challenge 1.4" );
     std::vector<Bytes> lines = utils::fromHexFile( "1_4.txt" );
 
-    float best = 0.f;
-    Bytes bestDecrypted;
-    uint8_t bestKey = 0;
+    utils::Guess best{};
     size_t bestLine = 0;
 
     for( size_t i = 0; i < lines.size(); ++i ) {
-        for( uint8_t key = 0; key != 255; ++key ) {
-            Bytes decrypted = utils::XOR( lines[i], key );
-            float prob = utils::isEnglishText( decrypted );
+        utils::Guess guess = utils::guessKey( lines[i] );
 
-            if( prob > best ) {
-                best = prob;
-                bestKey = key;
-                bestLine = i;
-                bestDecrypted = decrypted;
-            }
+        if( guess.probability > best.probability ) {
+            best = guess;
+            bestLine = i;
         }
     }
 
-    std::string printable( ( const char* )bestDecrypted.data(), bestDecrypted.size() );
+    Bytes decrypted = utils::XOR( lines[bestLine], best.key );
+    std::string printable( ( const char* )decrypted.data(), decrypted.size() );
     std::string expected = "Now that the party is jumping\n";
     CHECK_EQ( printable, expected );
 }
