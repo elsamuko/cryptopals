@@ -183,3 +183,20 @@ std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
 
     return rv;
 }
+
+utils::Guess utils::guessKey( const Bytes& text ) {
+    float best = 0.f;
+    uint8_t bestKey = 0;
+
+    for( uint8_t key = 0; key != 255; ++key ) {
+        Bytes decrypted = utils::XOR( text, key );
+        float prob = utils::isEnglishText( decrypted );
+
+        if( prob > best ) {
+            best = prob;
+            bestKey = key;
+        }
+    }
+
+    return {bestKey, best};
+}

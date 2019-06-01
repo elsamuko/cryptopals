@@ -24,7 +24,13 @@ std::string XOR( const std::string& first, const std::string& second );
 Bytes XOR( const Bytes& first, const Bytes& second );
 Bytes XOR( const Bytes& first, const uint8_t& key );
 
+struct Guess {
+    uint8_t key;
+    float probability;
+};
+Guess guessKey( const Bytes& text );
 float isEnglishText( const Bytes& text );
 
 std::vector<Bytes> fromHexFile( const std::string& filename );
+
 }
