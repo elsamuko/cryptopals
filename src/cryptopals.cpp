@@ -73,12 +73,27 @@ void challenge1_4() {
     CHECK_EQ( printable, expected );
 }
 
+void challenge1_5() {
+    LOG( "Running challenge 1.5" );
+    std::string plain = "Burning 'em, if you ain't quick and nimble\n"
+                        "I go crazy when I hear a cymbal";
+    Bytes key = {'I', 'C', 'E' };
+    Bytes plainBytes( plain.cbegin(), plain.cend() );
+    Bytes encrypted = utils::XOR( plainBytes, key );
+    std::string hex = utils::binaryToHex( encrypted );
+    std::string expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272"
+                           "a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
+
+    CHECK_EQ( hex, expected );
+}
+
 int main() {
 
     challenge1_1();
     challenge1_2();
     challenge1_3();
     challenge1_4();
+    challenge1_5();
 
     return 0;
 }
