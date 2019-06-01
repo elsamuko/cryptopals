@@ -15,7 +15,14 @@ std::mutex m;
 std::string threadId() {
     std::stringstream ss;
     ss.width( 8 );
-    ss << syscall( SYS_gettid );
+#ifdef __APPLE__
+    uint64_t tid = 0;;
+    pthread_threadid_np( nullptr, &tid );
+#endif
+#ifdef __linux__
+    long tid = syscall( SYS_gettid );
+#endif
+    ss << std::hex << tid;
     return ss.str();
 }
 }
