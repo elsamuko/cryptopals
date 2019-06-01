@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
+#include <map>
+#include <cmath>
 
 uint8_t utils::parseHex( const char& hex ) {
     if( hex >= '0' && hex <= '9' ) {
@@ -17,9 +19,9 @@ uint8_t utils::parseHex( const char& hex ) {
     return 0;
 }
 
-std::vector<uint8_t> utils::hexToBinary( const std::string& hex ) {
+Bytes utils::hexToBinary( const std::string& hex ) {
     size_t size   = hex.size() / 2;
-    std::vector<uint8_t> binary( size, 0 );
+    Bytes binary( size, 0 );
 
     for( size_t i = 0; i < size; ++i ) {
         uint8_t higher = static_cast<uint8_t>( parseHex( hex[2 * i + 0] ) );
@@ -30,7 +32,7 @@ std::vector<uint8_t> utils::hexToBinary( const std::string& hex ) {
     return binary;
 }
 
-std::string utils::binaryToBase64( const std::vector<uint8_t>& binary ) {
+std::string utils::binaryToBase64( const Bytes& binary ) {
 
     static const char table64[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -81,14 +83,14 @@ std::string utils::binaryToBase64( const std::vector<uint8_t>& binary ) {
 }
 
 std::string utils::hexToBase64( const std::string& hex ) {
-    std::vector<uint8_t> binary = hexToBinary( hex );
+    Bytes binary = hexToBinary( hex );
     std::string base64 = binaryToBase64( binary );
     return base64;
 }
 
-std::vector<uint8_t> utils::XOR( const std::vector<uint8_t>& first, const std::vector<uint8_t>& second ) {
+Bytes utils::XOR( const Bytes& first, const Bytes& second ) {
     size_t size = first.size();
-    std::vector<uint8_t> rv( size, 0 );
+    Bytes rv( size, 0 );
 
     if( first.size() != second.size() ) {
         LOG( "Error: input sizes are not equal!" );
@@ -102,7 +104,7 @@ std::vector<uint8_t> utils::XOR( const std::vector<uint8_t>& first, const std::v
     return rv;
 }
 
-std::string utils::binaryToHex( const std::vector<uint8_t>& bytes ) {
+std::string utils::binaryToHex( const Bytes& bytes ) {
     static const char table16[17] = "0123456789abcdef";
 
     std::string rv( 2 * bytes.size(), '\0' );
@@ -120,9 +122,44 @@ std::string utils::binaryToHex( const std::vector<uint8_t>& bytes ) {
 }
 
 std::string utils::XOR( const std::string& first, const std::string& second ) {
-    std::vector<uint8_t> vfirst = hexToBinary( first );
-    std::vector<uint8_t> vsecond = hexToBinary( second );
-    std::vector<uint8_t> vres = XOR( vfirst, vsecond );
+    Bytes vfirst = hexToBinary( first );
+    Bytes vsecond = hexToBinary( second );
+    Bytes vres = XOR( vfirst, vsecond );
     std::string rv = binaryToHex( vres );
+    return rv;
+}
+
+// higher is better
+float utils::isEnglishText( const Bytes& text ) {
+    size_t size = text.size();
+    std::map<char, float> freqs;
+
+    for( const uint8_t c : text ) {
+        if( isalpha( c ) ) {
+            freqs[::tolower( c )]++;
+        }
+    }
+
+    // https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language
+    float prob_ = freqs[' '];
+    float probE = freqs['e'];
+    float probT = freqs['t'];
+    float probA = freqs['a'];
+    float probO = freqs['o'];
+    float probI = freqs['i'];
+    float probN = freqs['n'];
+    float probS = freqs['s'];
+
+    return prob_ + probE + probT + probA + probO + probI + probN + probS;
+}
+
+Bytes utils::XOR( const Bytes& first, const uint8_t& key ) {
+    size_t size = first.size();
+    Bytes rv( size, 0 );
+
+    for( size_t i = 0; i < size; ++i ) {
+        rv[i] = first[i] xor key;
+    }
+
     return rv;
 }

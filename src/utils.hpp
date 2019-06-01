@@ -8,14 +8,22 @@
 #define CHECK( A ) if( !(A) ) { LOG( "Failed check for "#A ); }
 #define CHECK_EQ( A, B ) if( (A) != (B) ) { LOG( "Failed check for "#A" == "#B", " << A << " != " << B ); }
 
-namespace utils {
-uint8_t parseHex( const char& hex );
-std::vector<uint8_t> hexToBinary( const std::string& hex );
-std::string binaryToHex( const std::vector<uint8_t>& bytes );
+using Bytes = std::vector<uint8_t>;
+using Byte = uint8_t;
 
-std::string binaryToBase64( const std::vector<uint8_t>& binary );
+namespace utils {
+
+uint8_t parseHex( const char& hex );
+Bytes hexToBinary( const std::string& hex );
+std::string binaryToHex( const Bytes& bytes );
+
+std::string binaryToBase64( const Bytes& binary );
 std::string hexToBase64( const std::string& hex );
 
 std::string XOR( const std::string& first, const std::string& second );
-std::vector<uint8_t> XOR( const std::vector<uint8_t>& first, const std::vector<uint8_t>& second );
+Bytes XOR( const Bytes& first, const Bytes& second );
+Bytes XOR( const Bytes& first, const uint8_t& key );
+
+float isEnglishText( const Bytes& text );
+
 }
