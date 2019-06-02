@@ -3,6 +3,7 @@
 #include <map>
 #include <cmath>
 #include <fstream>
+#include <bitset>
 
 uint8_t utils::parseHex( const char& hex ) {
     if( hex >= '0' && hex <= '9' ) {
@@ -195,4 +196,20 @@ utils::Guess utils::guessKey( const Bytes& text ) {
     }
 
     return {bestKey, best};
+}
+
+size_t utils::hammingDistance( const std::string& first, const std::string& second ) {
+    size_t size = first.size();
+    size_t distance = 0;
+
+    if( size != second.size() ) {
+        LOG( "Error: first and second have different lenghts" );
+        return 0;
+    }
+
+    for( size_t i = 0; i < size ; ++i ) {
+        distance += std::bitset<8>( first[i] xor second[i] ).count();
+    }
+
+    return distance;
 }
