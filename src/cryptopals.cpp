@@ -87,6 +87,14 @@ void challenge1_5() {
     CHECK_EQ( hex, expected );
 }
 
+void challenge1_6() {
+    LOG( "Running challenge 1.6" );
+    std::string test  = "this is a test";
+    std::string wokka = "wokka wokka!!!";
+    size_t dist = utils::hammingDistance( test, wokka );
+    CHECK_EQ( dist, 37 );
+}
+
 int main() {
 
     challenge1_1();
@@ -94,6 +102,7 @@ int main() {
     challenge1_3();
     challenge1_4();
     challenge1_5();
+    challenge1_6();
 
     return 0;
 }
