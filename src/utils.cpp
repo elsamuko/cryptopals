@@ -139,6 +139,22 @@ Bytes utils::base64ToBinary( const std::string& base64 ) {
 
 }
 
+Bytes utils::fromBase64File( const std::string& filename ) {
+    std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
+
+    if( !file ) { return {}; }
+
+    std::stringstream ss;
+    std::string line;
+
+    while( std::getline( file, line ) ) {
+        ss << line;
+    }
+
+    Bytes bytes = base64ToBinary( ss.str( ) );
+    return bytes;
+}
+
 std::string utils::hexToBase64( const std::string& hex ) {
     Bytes binary = hexToBinary( hex );
     std::string base64 = binaryToBase64( binary );

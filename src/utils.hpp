@@ -33,6 +33,7 @@ Guess guessKey( const Bytes& text );
 float isEnglishText( const Bytes& text );
 
 std::vector<Bytes> fromHexFile( const std::string& filename );
+Bytes fromBase64File( const std::string& filename );
 
 size_t hammingDistance( const std::string& first, const std::string& second );
 }
