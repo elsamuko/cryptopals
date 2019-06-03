@@ -35,7 +35,8 @@ float isEnglishText( const Bytes& text );
 std::vector<Bytes> fromHexFile( const std::string& filename );
 Bytes fromBase64File( const std::string& filename );
 
-size_t hammingDistance( const std::string& first, const std::string& second );
+template<class Container>
+size_t hammingDistance( const Container& first, const Container& second );
 }
 
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes );

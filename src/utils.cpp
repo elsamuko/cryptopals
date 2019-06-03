@@ -269,7 +269,8 @@ utils::Guess utils::guessKey( const Bytes& text ) {
     return {bestKey, best};
 }
 
-size_t utils::hammingDistance( const std::string& first, const std::string& second ) {
+template<class Container>
+size_t utils::hammingDistance( const Container& first, const Container& second ) {
     size_t size = first.size();
     size_t distance = 0;
 
@@ -284,6 +285,9 @@ size_t utils::hammingDistance( const std::string& first, const std::string& seco
 
     return distance;
 }
+
+template size_t utils::hammingDistance<Bytes>( const Bytes& first, const Bytes& second );
+template size_t utils::hammingDistance<std::string>( const std::string& first, const std::string& second );
 
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes ) {
     os << utils::binaryToHex( bytes );
