@@ -1,7 +1,7 @@
 #include <iostream>
 #include "utils.hpp"
 #include <map>
-#include <cfloat>
+#include <limits>
 #include <future>
 
 // https://cryptopals.com/sets/1/challenges/1
@@ -92,7 +92,7 @@ void challenge1_6() {
 
     std::string test  = "this is a test";
     std::string wokka = "wokka wokka!!!";
-    size_t dist = utils::hammingDistance( test, wokka );
+    size_t dist = utils::hammingDistance<std::string>( test, wokka );
     CHECK_EQ( dist, 37 );
 
     // echo -n Hase | base64
@@ -100,6 +100,23 @@ void challenge1_6() {
     CHECK_EQ( hase, Bytes( {'H', 'a', 's', 'e' } ) );
 
     Bytes text = utils::fromBase64File( "1_6.txt" );
+
+    int keySize = 0;
+    float bestNormalized = std::numeric_limits<float>::max();
+
+    for( int i = 2; i < 40; ++i ) {
+        Bytes first  = Bytes( text.cbegin(), text.cbegin() + i );
+        Bytes second = Bytes( text.cbegin() + i, text.cbegin() + 2 * i );
+        size_t hamming = utils::hammingDistance<Bytes>( first, second );
+        float normalized = ( float )hamming / i;
+
+        if( normalized < bestNormalized ) {
+            bestNormalized = normalized;
+            keySize = i;
+        }
+    }
+
+    LOG( "Keysize is probably " << keySize );
 }
 
 int main() {
