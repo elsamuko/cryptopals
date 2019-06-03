@@ -89,10 +89,17 @@ void challenge1_5() {
 
 void challenge1_6() {
     LOG( "Running challenge 1.6" );
+
     std::string test  = "this is a test";
     std::string wokka = "wokka wokka!!!";
     size_t dist = utils::hammingDistance( test, wokka );
     CHECK_EQ( dist, 37 );
+
+    // echo -n Hase | base64
+    Bytes hase = utils::base64ToBinary( "SGFzZQ==" );
+    CHECK_EQ( hase, Bytes( {'H', 'a', 's', 'e' } ) );
+
+    Bytes text = utils::fromBase64File( "1_6.txt" );
 }
 
 int main() {
