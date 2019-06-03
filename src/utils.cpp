@@ -96,7 +96,7 @@ Bytes utils::XOR( const Bytes& first, const Bytes& second ) {
     Bytes rv( size1, 0 );
 
     for( size_t i = 0; i < size1; ++i ) {
-        rv[i] = first[i] xor second[i % size2];
+        rv[i] = first[i] ^ second[i % size2];
     }
 
     return rv;
@@ -159,7 +159,7 @@ Bytes utils::XOR( const Bytes& first, const uint8_t& key ) {
     Bytes rv( size, 0 );
 
     for( size_t i = 0; i < size; ++i ) {
-        rv[i] = first[i] xor key;
+        rv[i] = first[i] ^ key;
     }
 
     return rv;
@@ -208,7 +208,7 @@ size_t utils::hammingDistance( const std::string& first, const std::string& seco
     }
 
     for( size_t i = 0; i < size ; ++i ) {
-        distance += std::bitset<8>( first[i] xor second[i] ).count();
+        distance += std::bitset<8>( first[i] ^ second[i] ).count();
     }
 
     return distance;

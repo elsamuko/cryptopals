@@ -7,8 +7,12 @@
 #include <mutex>
 #include <cstring>
 
+#ifndef _WIN32
 #include <unistd.h>
 #include <sys/syscall.h>
+#else
+#include <Windows.h>
+#endif
 
 namespace  {
 std::mutex m;
@@ -21,6 +25,9 @@ std::string threadId() {
 #endif
 #ifdef __linux__
     long tid = syscall( SYS_gettid );
+#endif
+#ifdef _WIN32
+    DWORD tid = GetCurrentThreadId();
 #endif
     ss << std::hex << tid;
     return ss.str();
