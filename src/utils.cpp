@@ -284,3 +284,8 @@ size_t utils::hammingDistance( const std::string& first, const std::string& seco
 
     return distance;
 }
+
+std::ostream& operator<<( std::ostream& os, const Bytes& bytes ) {
+    os << utils::binaryToHex( bytes );
+    return os;
+}

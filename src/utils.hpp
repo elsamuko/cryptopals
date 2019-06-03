@@ -37,3 +37,5 @@ Bytes fromBase64File( const std::string& filename );
 
 size_t hammingDistance( const std::string& first, const std::string& second );
 }
+
+std::ostream& operator<<( std::ostream& os, const Bytes& bytes );
