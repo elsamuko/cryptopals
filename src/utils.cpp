@@ -105,7 +105,7 @@ Bytes utils::base64ToBinary( const std::string& base64 ) {
 
     size_t padding = 0;
 
-    auto get6Bit = [&base64, &padding]( const char c ) -> uint8_t {
+    auto get6Bit = [&padding]( const char c ) -> uint8_t {
         if( c == '=' ) { ++padding; return 0; }
 
         auto it = table64.find( c );
