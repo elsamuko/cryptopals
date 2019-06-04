@@ -128,6 +128,26 @@ void challenge1_6() {
     }
 
     LOG( "Keysize is probably " << keySize );
+
+    Bytes key;
+    key.reserve( keySize );
+    std::vector<Bytes> many = utils::disperse( text, keySize );
+
+    for( const Bytes& one : many ) {
+        key.push_back( utils::guessKey( one ).key );
+    }
+
+    Bytes decrypted = utils::XOR( text, key );
+
+    std::string expected = "I'm back and I'm ringin' the bell \n"
+                           "A rockin' on the mike while the fly girls yell \n"
+                           "In ecstasy in the back of me \n"
+                           "Well that's my DJ Deshay cuttin' all them Z's \n"
+                           "Hittin' hard and the girlies goin' crazy \n"
+                           "Vanilla's on the mike, man I'm not lazy. \n";
+    std::string printable( ( const char* )decrypted.data(), expected.size() );
+
+    CHECK_EQ( printable, expected );
 }
 
 int main() {
