@@ -104,7 +104,10 @@ void challenge1_6() {
 
     size_t keySize = 0;
     float bestNormalized = std::numeric_limits<float>::max();
-    float normFactor = 1.20f; // approximated by 'knowing' the keysize after decryption with every keysize
+
+    // approximated by 'knowing' the keysize after decryption with every keysize
+    // e.g. the Millikan way of science ;) (https://hsm.stackexchange.com/a/2759)
+    float normFactor = 1.20f;
 
     for( int i = 2; i < 40; ++i ) {
         Bytes first  = Bytes( text.cbegin() + 0 * i, text.cbegin() + 1 * i );
