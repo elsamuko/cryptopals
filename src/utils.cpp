@@ -201,28 +201,45 @@ std::string utils::XOR( const std::string& first, const std::string& second ) {
 // higher is better
 float utils::isEnglishText( const Bytes& text ) {
     std::map<int, float> freqs;
+    float penalty = 0.f;
 
     for( const uint8_t c : text ) {
-        if( std::isalpha( c ) ) {
+        bool isText = c == '\n' ||
+                      c == '\'' ||
+                      c == ' ' ||
+                      c == '\r' ||
+                      std::isalpha( c );
+        bool isCrap = std::iscntrl( c );
+
+        if( isText ) {
+            penalty--;
+
             if( std::isupper( c ) ) {
                 freqs[std::tolower( c )] += 1;
             } else {
-                freqs[std::tolower( c )] += 2;
+                freqs[std::tolower( c )] += 4;
             }
+        }
+
+        if( isCrap ) {
+            penalty++;
         }
     }
 
     // https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language
-    float prob_ = freqs[' '];
-    float probE = freqs['e'];
-    float probT = freqs['t'];
-    float probA = freqs['a'];
-    float probO = freqs['o'];
-    float probI = freqs['i'];
-    float probN = freqs['n'];
-    float probS = freqs['s'];
+    float probAP = 0.03f * freqs['\''];
+    float probCR = 0.03f * freqs['\r'];
+    float probLF = 0.03f * freqs['\n'];
+    float prob_  = 0.19181f * freqs[' '];
+    float probE  = 0.12702f * freqs['e'];
+    float probT  = 0.09056f * freqs['t'];
+    float probA  = 0.08167f * freqs['a'];
+    float probO  = 0.07507f * freqs['o'];
+    float probI  = 0.06966f * freqs['i'];
+    float probN  = 0.06749f * freqs['n'];
+    float probS  = 0.06327f * freqs['s'];
 
-    return prob_ + probE + probT + probA + probO + probI + probN + probS;
+    return probAP + probCR + probLF + prob_ + probE + probT + probA + probO + probI + probN + probS - penalty;
 }
 
 Bytes utils::XOR( const Bytes& first, const uint8_t& key ) {
