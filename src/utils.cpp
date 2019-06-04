@@ -293,3 +293,21 @@ std::ostream& operator<<( std::ostream& os, const Bytes& bytes ) {
     os << utils::binaryToHex( bytes );
     return os;
 }
+
+std::vector<Bytes> utils::disperse( const Bytes& mono, const size_t& parts ) {
+    std::vector<Bytes> many( parts );
+    size_t size = mono.size();
+
+    // performance
+
+    for( Bytes& one : many ) {
+        one.reserve( 1 + size / 5 );
+    }
+
+    // split
+    for( size_t i = 0; i < size; ++i ) {
+        many[i % parts].push_back( mono[i] );
+    }
+
+    return many;
+}

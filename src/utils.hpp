@@ -25,6 +25,8 @@ std::string XOR( const std::string& first, const std::string& second );
 Bytes XOR( const Bytes& first, const Bytes& second );
 Bytes XOR( const Bytes& first, const uint8_t& key );
 
+std::vector<Bytes> disperse( const Bytes& mono, const size_t& parts );
+
 struct Guess {
     uint8_t key;
     float probability;
