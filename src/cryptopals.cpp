@@ -1,6 +1,7 @@
 #include <iostream>
 #include "utils.hpp"
 #include <map>
+#include <cmath>
 #include <limits>
 #include <future>
 
@@ -101,14 +102,24 @@ void challenge1_6() {
 
     Bytes text = utils::fromBase64File( "1_6.txt" );
 
-    int keySize = 0;
+    size_t keySize = 0;
     float bestNormalized = std::numeric_limits<float>::max();
+    float normFactor = 1.20f; // approximated by 'knowing' the keysize after decryption with every keysize
 
     for( int i = 2; i < 40; ++i ) {
-        Bytes first  = Bytes( text.cbegin(), text.cbegin() + i );
-        Bytes second = Bytes( text.cbegin() + i, text.cbegin() + 2 * i );
-        size_t hamming = utils::hammingDistance<Bytes>( first, second );
-        float normalized = ( float )hamming / i;
+        Bytes first  = Bytes( text.cbegin() + 0 * i, text.cbegin() + 1 * i );
+        Bytes second = Bytes( text.cbegin() + 1 * i, text.cbegin() + 2 * i );
+        Bytes third  = Bytes( text.cbegin() + 2 * i, text.cbegin() + 3 * i );
+        Bytes fourth = Bytes( text.cbegin() + 3 * i, text.cbegin() + 4 * i );
+
+        size_t hamming1 = utils::hammingDistance<Bytes>( first, second );
+        size_t hamming2 = utils::hammingDistance<Bytes>( second, third );
+        size_t hamming3 = utils::hammingDistance<Bytes>( third, fourth );
+
+        float normalized = ( float )( hamming1 + hamming2 + hamming3 ) / std::pow( i, normFactor );
+
+        // ./cryptopals 2> >( gnuplot -p -e 'plot "/dev/stdin"' )
+        // std::cerr << i << " " << normalized << std::endl;
 
         if( normalized < bestNormalized ) {
             bestNormalized = normalized;
