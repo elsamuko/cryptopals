@@ -5,6 +5,8 @@
 #include <limits>
 #include <future>
 
+#include "openssl/crypto.h"
+
 // https://cryptopals.com/sets/1/challenges/1
 void challenge1_1() {
     LOG( "Running challenge 1.1" );
@@ -153,6 +155,12 @@ void challenge1_6() {
     CHECK_EQ( printable, expected );
 }
 
+void challenge1_7() {
+    LOG( "Running challenge 1.7" );
+    std::string opensslVersion = OpenSSL_version( OPENSSL_VERSION );
+    CHECK_EQ( "OpenSSL 1.1.1c  28 May 2019", opensslVersion );
+}
+
 int main() {
 
     challenge1_1();
@@ -161,6 +169,7 @@ int main() {
     challenge1_4();
     challenge1_5();
     challenge1_6();
+    challenge1_7();
 
     return 0;
 }
