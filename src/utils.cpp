@@ -318,7 +318,7 @@ std::vector<Bytes> utils::disperse( const Bytes& mono, const size_t& parts ) {
     // performance
 
     for( Bytes& one : many ) {
-        one.reserve( 1 + size / 5 );
+        one.reserve( 1 + size / parts );
     }
 
     // split
