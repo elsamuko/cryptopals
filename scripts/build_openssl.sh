@@ -114,7 +114,7 @@ function doBuildLinux {
     # debug
     (export CXXFLAGS="-g -O0"; \
     export CFLAGS="-g -O0"; \
-    doConfigure release)
+    doConfigureLinux release)
     make depend
     make -j8
     make install_sw
@@ -122,7 +122,7 @@ function doBuildLinux {
     # release
     (export CXXFLAGS="-msse2 -Ofast -finline -ffast-math -funsafe-math-optimizations"; \
     export CFLAGS="-msse2 -Ofast -finline -ffast-math -funsafe-math-optimizations"; \
-    doConfigure debug)
+    doConfigureLinux debug)
     make depend
     make -j8
     make install_sw
