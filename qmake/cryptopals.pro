@@ -11,6 +11,7 @@ HEADERS += $${SRC_DIR}/log.hpp
 SOURCES += $${SRC_DIR}/log.cpp
 
 include( setup.pri )
+include( openssl.pri )
 linux: include( linux.pri )
 win32: include( win.pri )
 macx:  include( mac.pri )
