@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+if [[ "$BASH_VERSION" == 3.* ]]; then
+    echo "Use bash 4 or later, try"
+    echo "/usr/local/bin/bash ${BASH_SOURCE[0]}"
+    exit 1
+fi
+
 case $(uname) in
     Linux)
         OS=linux
@@ -87,6 +93,21 @@ function doConfigureWin {
     esac
 }
 
+function doConfigureMac {
+    ./Configure > "$PROJECT_DIR/options.txt"
+    case "$1" in
+        'd'*)
+            ./Configure no-shared zlib threads debug-darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
+            ;;
+        'r'*)
+            ./Configure no-shared zlib threads darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
+            ;;
+        *)
+            echo "Error in $LINENO : \$1 is $1"
+            ;;
+    esac
+}
+
 function doBuildLinux {
     cd "$SRC_DIR/$PROJECT-$VERSION"
 
@@ -144,6 +165,33 @@ function doBuildWin {
 	"$BUILD_HELPER"
 }
 
+function doBuildMac {
+    cd "$SRC_DIR/$PROJECT-$VERSION"
+
+    export CC="clang"
+    export CXX="clang++"
+    export LDFLAGS="-L/opt/local/lib -lc++"
+    export CPPFLAGS="-I/opt/local/include"
+    export CXXFLAGS="-std=c++11 -stdlib=libc++ -mmacosx-version-min=10.10"
+    export CFLAGS="-I/opt/local/include -mmacosx-version-min=10.10"
+
+    # debug
+    (export CXXFLAGS="$CXXFLAGS -g -O0"; \
+    export CFLAGS="$CFLAGS -g -O0"; \
+    doConfigureMac release)
+    make depend
+    make -j8
+    make install_sw
+
+    # release
+    (export CXXFLAGS="$CXXFLAGS -msse2 -Ofast -finline -ffast-math -funsafe-math-optimizations"; \
+    export CFLAGS="$CFLAGS -msse2 -Ofast -finline -ffast-math -funsafe-math-optimizations"; \
+    doConfigureMac debug)
+    make depend
+    make -j8
+    make install_sw
+}
+
 function doCopy {
     mkdir -p "$TARGET_DIR/bin/$OS/debug"
     mkdir -p "$TARGET_DIR/bin/$OS/release"
@@ -154,7 +202,6 @@ function doCopy {
     cp -r "$BUILD_DIR/release/lib/libssl."* "$TARGET_DIR/bin/$OS/release/"
     cp -r "$BUILD_DIR/release/include"/* "$TARGET_DIR/include"
 }
-
 
 echo "Prepare"
 doPrepare | indent
