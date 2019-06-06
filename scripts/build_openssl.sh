@@ -97,10 +97,10 @@ function doConfigureMac {
     ./Configure > "$PROJECT_DIR/options.txt"
     case "$1" in
         'd'*)
-            ./Configure no-shared zlib threads debug-darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
+            ./Configure no-shared threads debug-darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
             ;;
         'r'*)
-            ./Configure no-shared zlib threads darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
+            ./Configure no-shared threads darwin64-x86_64-cc --prefix="$BUILD_DIR/$1"
             ;;
         *)
             echo "Error in $LINENO : \$1 is $1"
