@@ -10,3 +10,5 @@ win32 {
     LIBS += $${OPENSSL_BIN_DIR}/libssl.a
     LIBS += $${OPENSSL_BIN_DIR}/libcrypto.a
 }
+
+linux: LIBS += -ldl
