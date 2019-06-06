@@ -7,6 +7,8 @@ SOURCES += $${SRC_DIR}/cryptopals.cpp
 
 HEADERS += $${SRC_DIR}/utils.hpp
 SOURCES += $${SRC_DIR}/utils.cpp
+HEADERS += $${SRC_DIR}/crypto.hpp
+SOURCES += $${SRC_DIR}/crypto.cpp
 HEADERS += $${SRC_DIR}/log.hpp
 SOURCES += $${SRC_DIR}/log.cpp
 
