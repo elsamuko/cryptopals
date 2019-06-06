@@ -1,11 +1,13 @@
-#include <iostream>
-#include "utils.hpp"
 #include <map>
 #include <cmath>
 #include <limits>
 #include <future>
+#include <iostream>
 
 #include "openssl/crypto.h"
+
+#include "utils.hpp"
+#include "crypto.hpp"
 
 // https://cryptopals.com/sets/1/challenges/1
 void challenge1_1() {
@@ -157,8 +159,25 @@ void challenge1_6() {
 
 void challenge1_7() {
     LOG( "Running challenge 1.7" );
+
     std::string opensslVersion = OpenSSL_version( OPENSSL_VERSION );
     CHECK_EQ( "OpenSSL 1.1.1c  28 May 2019", opensslVersion );
+
+    std::string key = "YELLOW SUBMARINE";
+    Bytes vkey( key.cbegin(), key.cend() );
+    Bytes encrypted = utils::fromBase64File( "1_7.txt" );
+
+    // base64 -d 1_7.txt | openssl enc -d -aes-128-ecb -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)"
+    std::string plain = crypto::decryptAES128ECB( encrypted, vkey );
+    std::string expected = "I'm back and I'm ringin' the bell \n"
+                           "A rockin' on the mike while the fly girls yell \n"
+                           "In ecstasy in the back of me \n"
+                           "Well that's my DJ Deshay cuttin' all them Z's \n"
+                           "Hittin' hard and the girlies goin' crazy \n"
+                           "Vanilla's on the mike, man I'm not lazy. \n";
+    plain.resize( expected.size() );
+
+    CHECK_EQ( plain, expected );
 }
 
 int main() {
