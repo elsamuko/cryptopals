@@ -1,10 +1,44 @@
-#include <memory>
-
 #include "crypto.hpp"
+
+#include <memory>
 
 #include "openssl/evp.h"
 
+#include "converter.hpp"
+#include "log.hpp"
+
 #define BREAK_IF( COND, MSG ) if( ( COND ) ) { LOG( MSG ); break; }
+
+Bytes crypto::XOR( const Bytes& first, const Bytes& second ) {
+    size_t size1 = first.size();
+    size_t size2 = second.size();
+    Bytes rv( size1, 0 );
+
+    for( size_t i = 0; i < size1; ++i ) {
+        rv[i] = first[i] ^ second[i % size2];
+    }
+
+    return rv;
+}
+
+std::string crypto::XOR( const std::string& first, const std::string& second ) {
+    Bytes vfirst = converter::hexToBinary( first );
+    Bytes vsecond = converter::hexToBinary( second );
+    Bytes vres = XOR( vfirst, vsecond );
+    std::string rv = converter::binaryToHex( vres );
+    return rv;
+}
+
+Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
+    size_t size = first.size();
+    Bytes rv( size, 0 );
+
+    for( size_t i = 0; i < size; ++i ) {
+        rv[i] = first[i] ^ key;
+    }
+
+    return rv;
+}
 
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Decrypting_the_Message
 int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char* key, unsigned char* iv, unsigned char* plaintext ) {

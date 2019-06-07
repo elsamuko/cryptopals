@@ -7,14 +7,16 @@
 #include "openssl/crypto.h"
 
 #include "utils.hpp"
+#include "converter.hpp"
 #include "crypto.hpp"
+#include "log.hpp"
 
 // https://cryptopals.com/sets/1/challenges/1
 void challenge1_1() {
     LOG( "Running challenge 1.1" );
     std::string hex = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
     std::string expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
-    std::string calculated = utils::hexToBase64( hex );
+    std::string calculated = converter::hexToBase64( hex );
     CHECK_EQ( expected, calculated );
 }
 
@@ -24,7 +26,7 @@ void challenge1_2() {
     std::string first = "1c0111001f010100061a024b53535009181c";
     std::string second = "686974207468652062756c6c277320657965";
     std::string expected = "746865206b696420646f6e277420706c6179";
-    std::string calculated = utils::XOR( first, second );
+    std::string calculated = crypto::XOR( first, second );
     CHECK_EQ( expected, calculated );
 }
 
@@ -32,11 +34,11 @@ void challenge1_2() {
 void challenge1_3() {
     LOG( "Running challenge 1.3" );
     std::string secret = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    Bytes bytes = utils::hexToBinary( secret );
+    Bytes bytes = converter::hexToBinary( secret );
 
     utils::Guess guess = utils::guessKey( bytes );
 
-    Bytes decrypted = utils::XOR( bytes, guess.key );
+    Bytes decrypted = crypto::XOR( bytes, guess.key );
     std::string printable( ( const char* )decrypted.data(), decrypted.size() );
     std::string expected = "Cooking MC's like a pound of bacon";
     CHECK_EQ( printable, expected );
@@ -72,7 +74,7 @@ void challenge1_4() {
         }
     }
 
-    Bytes decrypted = utils::XOR( lines[bestLine], best.key );
+    Bytes decrypted = crypto::XOR( lines[bestLine], best.key );
     std::string printable( ( const char* )decrypted.data(), decrypted.size() );
     std::string expected = "Now that the party is jumping\n";
     CHECK_EQ( printable, expected );
@@ -84,8 +86,8 @@ void challenge1_5() {
                         "I go crazy when I hear a cymbal";
     Bytes key = {'I', 'C', 'E' };
     Bytes plainBytes( plain.cbegin(), plain.cend() );
-    Bytes encrypted = utils::XOR( plainBytes, key );
-    std::string hex = utils::binaryToHex( encrypted );
+    Bytes encrypted = crypto::XOR( plainBytes, key );
+    std::string hex = converter::binaryToHex( encrypted );
     std::string expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272"
                            "a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
 
@@ -101,7 +103,7 @@ void challenge1_6() {
     CHECK_EQ( dist, 37 );
 
     // echo -n Hase | base64
-    Bytes hase = utils::base64ToBinary( "SGFzZQ==" );
+    Bytes hase = converter::base64ToBinary( "SGFzZQ==" );
     CHECK_EQ( hase, Bytes( {'H', 'a', 's', 'e' } ) );
 
     Bytes text = utils::fromBase64File( "1_6.txt" );
@@ -144,7 +146,7 @@ void challenge1_6() {
         key.push_back( utils::guessKey( one ).key );
     }
 
-    Bytes decrypted = utils::XOR( text, key );
+    Bytes decrypted = crypto::XOR( text, key );
 
     std::string expected = "I'm back and I'm ringin' the bell \n"
                            "A rockin' on the mike while the fly girls yell \n"
