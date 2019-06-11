@@ -85,6 +85,22 @@ std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
     return rv;
 }
 
+std::vector<std::string> utils::fromFile( const std::string& filename ) {
+    std::vector<std::string> rv;
+    std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
+
+    if( !file ) { return rv; }
+
+    std::string line;
+    rv.reserve( 32 );
+
+    while( std::getline( file, line ) ) {
+        rv.emplace_back( line );
+    }
+
+    return rv;
+}
+
 utils::Guess utils::guessKey( const Bytes& text ) {
     float best = 0.f;
     uint8_t bestKey = 0;
@@ -144,3 +160,4 @@ std::vector<Bytes> utils::disperse( const Bytes& mono, const size_t& parts ) {
 
     return many;
 }
+

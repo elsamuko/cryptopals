@@ -24,6 +24,9 @@ float isEnglishText( const Bytes& text );
 //! reads \p filename with newline separated hex lines
 std::vector<Bytes> fromHexFile( const std::string& filename );
 
+//! reads \p filename with newline separated lines
+std::vector<std::string> fromFile( const std::string& filename );
+
 //! reads \p filename with base64 content
 Bytes fromBase64File( const std::string& filename );
 
