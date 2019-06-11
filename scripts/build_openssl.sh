@@ -30,6 +30,7 @@ MAIN_DIR="$SCRIPT_DIR/.."
 TARGET_DIR="$MAIN_DIR/libs/$PROJECT"
 PROJECT_DIR="$MAIN_DIR/tmp/$PROJECT"
 DOWNLOAD="$PROJECT_DIR/$PROJECT-$VERSION.tar.gz"
+JOMZIP="$PROJECT_DIR/jom.zip"
 SRC_DIR="$PROJECT_DIR/src"
 BUILD_DIR="$SRC_DIR/$PROJECT-$VERSION"
 BUILD_HELPER="$BUILD_DIR/build.bat"
@@ -54,6 +55,12 @@ function doDownload {
     if [ ! -f "$DOWNLOAD" ]; then
         curl -s -L "$DL_URL" -o "$DOWNLOAD" 2>&1
     fi
+    
+    if [[ $OS == "win" ]] && [ ! -f "$JOMZIP" ]; then
+        curl -s -L "http://download.qt.io/official_releases/jom/jom.zip" -o "$JOMZIP"
+        unzip -j "$JOMZIP" "jom.exe" -d "$PROJECT_DIR"
+        chmod +x "$PROJECT_DIR/jom.exe"
+    fi
 }
 
 function doUnzip {
@@ -76,7 +83,10 @@ function doConfigureLinux {
 }
 
 function doConfigureWin {
-    local WBUILD_DIR="$(cygpath -w "$BUILD_DIR")"
+    WBUILD_DIR="$(cygpath -w "$BUILD_DIR")"
+    export CXXFLAGS="/FS /NOLOGO"
+    export CFLAGS="/FS /NOLOGO"
+
     perl Configure > "$PROJECT_DIR/options.txt"
     case "$1" in 
         'd'*)
@@ -109,7 +119,7 @@ function doConfigureMac {
 }
 
 function doBuildLinux {
-    cd "$SRC_DIR/$PROJECT-$VERSION"
+    cd "$SRC_DIR/$PROJECT-$VERSION" || exit
 
     # debug
     (export CXXFLAGS="-g -O0"; \
@@ -144,15 +154,14 @@ function createHelperWin {
 
     echo -ne '@echo off\r\n' > "$HELPER"
     echo -ne "call \"$VSNEWCOMNTOOLS\\\\vcvars64.bat\"\r\n" >> "$BUILD_HELPER"
-	echo -ne 'nmake vclean\r\n' >> "$BUILD_HELPER"
-	echo -ne 'nmake \r\n' >> "$BUILD_HELPER"
-	echo -ne 'nmake install\r\n' >> "$BUILD_HELPER"
+	echo -ne 'jom /S /L install_dev\r\n' >> "$BUILD_HELPER"
 
     chmod +x "$BUILD_HELPER"
 }
 
 function doBuildWin {
-    cd "$SRC_DIR/$PROJECT-$VERSION"
+    cd "$SRC_DIR/$PROJECT-$VERSION" || exit
+    cp "$PROJECT_DIR/jom.exe" .
 	
     # debug
     doConfigureWin debug
@@ -166,7 +175,7 @@ function doBuildWin {
 }
 
 function doBuildMac {
-    cd "$SRC_DIR/$PROJECT-$VERSION"
+    cd "$SRC_DIR/$PROJECT-$VERSION" || exit
 
     export CC="clang"
     export CXX="clang++"
