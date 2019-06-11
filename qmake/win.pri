@@ -9,6 +9,13 @@ CONFIG(debug, debug|release) {
     COMPILE_FLAG=d
 }
 
+LIBS += delayimp.lib Advapi32.lib User32.lib Crypt32.lib Ws2_32.lib
+
+QMAKE_LFLAGS += /DELAYLOAD:Advapi32.dll \
+                /DELAYLOAD:User32.dll \
+                /DELAYLOAD:Crypt32.dll \
+                /DELAYLOAD:Ws2_32.dll
+
 static {
     # change MD -> MT
     # \sa mkspecs/common/msvc-desktop.conf
