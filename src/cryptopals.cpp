@@ -182,6 +182,36 @@ void challenge1_7() {
     CHECK_EQ( plain, expected );
 }
 
+void challenge1_8() {
+    LOG( "Running challenge 1.8" );
+
+    std::vector<std::string> lines = utils::fromFile( "1_8.txt" );
+    size_t blockSize = 2 * 128 / 8; // 32 chars of a hex string are 128 bit
+
+    size_t suspectedLine = 0;
+
+    for( size_t i = 0; i < lines.size(); ++i ) {
+        std::map<std::string, size_t> count;
+        size_t steps = lines[i].size() / blockSize;
+
+        // search for duplicate blocks
+        for( size_t j = 0; j < steps; ++j ) {
+            std::string block( lines[i].substr( j * blockSize, blockSize ) );
+            count[block]++;
+        }
+
+        // print line with duplicate blocks, which indicates AES-128-ECB encryption
+        for( auto&& [first, second] : count ) {
+            if( second > 1 ) {
+                suspectedLine = i;
+                LOG( "Line " << i << " has " << second << " identical blocks with " << first );
+            }
+        }
+    }
+
+    CHECK_EQ( suspectedLine, 132 );
+}
+
 int main() {
 
     challenge1_1();
@@ -191,6 +221,7 @@ int main() {
     challenge1_5();
     challenge1_6();
     challenge1_7();
+    challenge1_8();
 
     return 0;
 }
