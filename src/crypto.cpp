@@ -87,3 +87,21 @@ std::string crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
     plain.resize( ( size_t )len );
     return plain;
 }
+
+template<class Container>
+Container crypto::padPKCS7( const Container& input, const uint8_t blockSize ) {
+    size_t size = input.size();
+
+    uint8_t padSize = blockSize - size % blockSize;
+    Container rv = input;
+    rv.reserve( size + padSize );
+
+    for( uint8_t i = 0; i < padSize; ++i ) {
+        rv.push_back( padSize );
+    }
+
+    return rv;
+}
+
+template Bytes crypto::padPKCS7( const Bytes& input, const uint8_t blockSize );
+template std::string crypto::padPKCS7( const std::string& input, const uint8_t blockSize );
