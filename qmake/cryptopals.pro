@@ -15,6 +15,9 @@ HEADERS += $${SRC_DIR}/types.hpp
 HEADERS += $${SRC_DIR}/log.hpp
 SOURCES += $${SRC_DIR}/log.cpp
 
+HEADERS += $${SRC_DIR}/set1.hpp
+SOURCES += $${SRC_DIR}/set1.cpp
+
 include( setup.pri )
 include( openssl.pri )
 linux: include( linux.pri )
