@@ -12,7 +12,8 @@
 
 !*.cpp
 !*.hpp
-!*.fl
+
+!bin/*.txt
 
 tmp
 libs
