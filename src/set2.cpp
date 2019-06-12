@@ -13,3 +13,16 @@ void challenge2_9() {
 
     CHECK_EQ( padded, expected );
 }
+
+void challenge2_10() {
+    LOG( "Running challenge 2.10" );
+
+    std::string key = "YELLOW SUBMARINE";
+    Bytes vkey( key.cbegin(), key.cend() );
+
+    std::string plain = "Hello World!";
+    Bytes encrypted = crypto::encryptAES128ECB( plain, vkey );
+    std::string decrypted = crypto::decryptAES128ECB( encrypted, vkey );
+    CHECK_EQ( plain, decrypted );
+
+}
