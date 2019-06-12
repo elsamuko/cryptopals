@@ -84,8 +84,8 @@ function doConfigureLinux {
 
 function doConfigureWin {
     WBUILD_DIR="$(cygpath -w "$BUILD_DIR")"
-    export CXXFLAGS="/FS /NOLOGO"
-    export CFLAGS="/FS /NOLOGO"
+    export CXXFLAGS="/FS /nologo"
+    export CFLAGS="/FS /nologo"
 
     perl Configure > "$PROJECT_DIR/options.txt"
     case "$1" in 
