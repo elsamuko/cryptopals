@@ -40,6 +40,37 @@ Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
     return rv;
 }
 
+// https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
+int encrypt( unsigned char* plaintext, int plaintext_len, unsigned char* key, unsigned char* iv, unsigned char* ciphertext ) {
+
+    int ciphertext_len = 0;
+
+    do {
+        int len = 0;
+
+        std::shared_ptr<EVP_CIPHER_CTX> ctx( EVP_CIPHER_CTX_new(), []( EVP_CIPHER_CTX * ctx ) {
+            EVP_CIPHER_CTX_free( ctx );
+        } );
+        BREAK_IF( !ctx, "Error: Invalid ctx" );
+
+        int rv = EVP_EncryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
+        BREAK_IF( rv != 1, "Error: EVP_EncryptInit_ex returned " << rv );
+
+        rv = EVP_EncryptUpdate( ctx.get(), ciphertext, &len, plaintext, plaintext_len );
+        BREAK_IF( rv != 1, "Error: EVP_EncryptUpdate returned " << rv );
+
+        ciphertext_len = len;
+
+        rv = EVP_EncryptFinal_ex( ctx.get(), ciphertext + len, &len );
+        BREAK_IF( rv != 1, "Error: EVP_EncryptFinal_ex returned " << rv );
+
+        ciphertext_len += len;
+
+    } while( false );
+
+    return ciphertext_len;
+}
+
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Decrypting_the_Message
 int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char* key, unsigned char* iv, unsigned char* plaintext ) {
 
@@ -71,9 +102,26 @@ int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char*
     return plaintext_len;
 }
 
+Bytes crypto::encryptAES128ECB( const std::string& text, const Bytes& key ) {
+
+    unsigned char* c_iv = nullptr;
+    unsigned char* c_key = const_cast<unsigned char*>( key.data() );
+
+    unsigned char* c_plaintext = ( unsigned char* )( text.data() );;
+    int plaintext_len = text.size();
+
+    Bytes cipher( plaintext_len + key.size(), 0 );
+    unsigned char* c_ciphertext = reinterpret_cast<unsigned char*>( cipher.data() );
+
+    int len = encrypt( c_plaintext, plaintext_len, c_key, c_iv, c_ciphertext );
+
+    cipher.resize( ( size_t )len );
+    return cipher;
+}
+
 std::string crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
-    unsigned char* c_iv = nullptr ; //const_cast<unsigned char*>( key.data() );
+    unsigned char* c_iv = nullptr;
     unsigned char* c_key = const_cast<unsigned char*>( key.data() );
 
     unsigned char* c_ciphertext = const_cast<unsigned char*>( data.data() );;
