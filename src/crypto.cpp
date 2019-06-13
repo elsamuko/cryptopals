@@ -104,6 +104,13 @@ int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char*
 
 Bytes crypto::encryptAES128ECB( const std::string& text, const Bytes& key ) {
 
+    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+
+    if( key.size() != blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+        return {};
+    }
+
     unsigned char* c_iv = nullptr;
     unsigned char* c_key = const_cast<unsigned char*>( key.data() );
 
@@ -120,6 +127,13 @@ Bytes crypto::encryptAES128ECB( const std::string& text, const Bytes& key ) {
 }
 
 std::string crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
+
+    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+
+    if( key.size() != blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+        return {};
+    }
 
     unsigned char* c_iv = nullptr;
     unsigned char* c_key = const_cast<unsigned char*>( key.data() );
