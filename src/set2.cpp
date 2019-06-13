@@ -21,8 +21,9 @@ void challenge2_10() {
     Bytes vkey( key.cbegin(), key.cend() );
 
     std::string plain = "Hello World!";
-    Bytes encrypted = crypto::encryptAES128ECB( plain, vkey );
-    std::string decrypted = crypto::decryptAES128ECB( encrypted, vkey );
-    CHECK_EQ( plain, decrypted );
+    Bytes vPlain( plain.begin(), plain.end() );
+    Bytes encrypted = crypto::encryptAES128ECB( vPlain, vkey );
+    Bytes decrypted = crypto::decryptAES128ECB( encrypted, vkey );
+    CHECK_EQ( vPlain, decrypted );
 
 }

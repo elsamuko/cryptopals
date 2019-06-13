@@ -168,7 +168,8 @@ void challenge1_7() {
     Bytes encrypted = utils::fromBase64File( "1_7.txt" );
 
     // base64 -d 1_7.txt | openssl enc -d -aes-128-ecb -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)"
-    std::string plain = crypto::decryptAES128ECB( encrypted, vkey );
+    Bytes vPlain = crypto::decryptAES128ECB( encrypted, vkey );
+    std::string plain( vPlain.cbegin(), vPlain.cend() );
     std::string expected = "I'm back and I'm ringin' the bell \n"
                            "A rockin' on the mike while the fly girls yell \n"
                            "In ecstasy in the back of me \n"
