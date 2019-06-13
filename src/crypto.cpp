@@ -102,7 +102,7 @@ int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char*
     return plaintext_len;
 }
 
-Bytes crypto::encryptAES128ECB( const std::string& text, const Bytes& key ) {
+Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
 
     size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
 
@@ -126,7 +126,7 @@ Bytes crypto::encryptAES128ECB( const std::string& text, const Bytes& key ) {
     return cipher;
 }
 
-std::string crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
+Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
     size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
 
@@ -141,7 +141,7 @@ std::string crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
     unsigned char* c_ciphertext = const_cast<unsigned char*>( data.data() );;
     int ciphertext_len = data.size();
 
-    std::string plain( ciphertext_len, '\0' );
+    Bytes plain( ciphertext_len, 0 );
     unsigned char* c_plaintext = reinterpret_cast<unsigned char*>( plain.data() );
 
     int len = decrypt( c_ciphertext, ciphertext_len, c_key, c_iv, c_plaintext );
