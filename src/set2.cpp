@@ -9,10 +9,18 @@ void challenge2_9() {
     LOG( "Running challenge 2.9" );
 
     std::string text = "YELLOW SUBMARINE";
-    std::string expected = "YELLOW SUBMARINE\x04\x04\x04\x04";
-    std::string padded = crypto::padPKCS7( text, 20 );
 
-    CHECK_EQ( padded, expected );
+    std::string expected20 = "YELLOW SUBMARINE\x04\x04\x04\x04";
+    std::string padded20 = crypto::padPKCS7( text, 20 );
+    CHECK_EQ( padded20, expected20 );
+    std::string unpadded20 = crypto::unpadPKCS7( padded20 );
+    CHECK_EQ( unpadded20, text );
+
+    std::string expected16 = "YELLOW SUBMARINE\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10";
+    std::string padded16 = crypto::padPKCS7( text, 16 );
+    CHECK_EQ( padded16, expected16 );
+    std::string unpadded16 = crypto::unpadPKCS7( padded16 );
+    CHECK_EQ( unpadded16, text );
 }
 
 void challenge2_10() {
