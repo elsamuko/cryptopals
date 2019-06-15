@@ -52,4 +52,18 @@ void challenge2_10() {
         Bytes decrypted = crypto::decryptAES128CBC( encrypted, vkey, viv );
         CHECK_EQ( vPlain, decrypted );
     }
+
+    // challenge itself
+    {
+        // base64 -d 2_10.txt | openssl enc -d -aes-128-cbc -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)" -iv "00000000000000000000000000000000"
+        Bytes encrypted = utils::fromBase64File( "2_10.txt" );
+        Bytes viv2( 16, 0 );
+        Bytes decrypted = crypto::decryptAES128CBC( encrypted, vkey, viv2 );
+        std::string plain( decrypted.cbegin(), decrypted.cend() );
+
+        std::string expected = "I'm back and I'm ringin' the bell \n"
+                               "A rockin' on the mike while the fly girls yell \n";
+        plain.resize( expected.size() );
+        CHECK_EQ( plain, expected );
+    }
 }
