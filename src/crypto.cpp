@@ -170,6 +170,11 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
         return {};
     }
 
+    if( data.size() % openssl::blockSize != 0 ) {
+        LOG( "Error: Invalid data size " << data.size() << " % " << openssl::blockSize << " != 0" );
+        return {};
+    }
+
     Bytes plain( data.size(), 0 );
 
     int len = openssl::decrypt( data.data(), static_cast<int>( data.size() ), key.data(), nullptr, plain.data() );
