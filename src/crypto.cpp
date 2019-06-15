@@ -207,7 +207,7 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
         Bytes plain = crypto::XOR( encrypted,
                                    Bytes( padded.cbegin() + ( i + 0 ) * blockSize,
                                           padded.cbegin() + ( i + 1 ) * blockSize ) );
-        encrypted = crypto::encryptAES128ECB( plain, key );
+        openssl::encrypt( plain.data(), plain.size(), key.data(), nullptr, encrypted.data() );
         result.insert( result.end(), encrypted.cbegin(), encrypted.cend() );
     }
 
@@ -236,12 +236,13 @@ Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes
     size_t steps = data.size() / blockSize;
 
     Bytes newIV = iv;
+    Bytes decrypted( blockSize, 0 );
     Bytes result;
 
     for( size_t i = 0; i < steps; ++i ) {
         Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * blockSize,
                                  data.cbegin() + ( i + 1 ) * blockSize );
-        Bytes decrypted = crypto::decryptAES128ECB( encrypted, key );
+        openssl::decrypt( encrypted.data(), encrypted.size(), key.data(), nullptr, decrypted.data() );
         Bytes plain = crypto::XOR( newIV, decrypted );
         result.insert( result.end(), plain.cbegin(), plain.cend() );
         newIV = encrypted;
