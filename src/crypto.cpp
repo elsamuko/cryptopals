@@ -42,7 +42,7 @@ Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
 
 namespace openssl {
 
-const size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+const size_t blockSize = static_cast<size_t>( EVP_CIPHER_block_size( EVP_aes_128_ecb() ) );
 
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
 int encrypt( const unsigned char* plaintext, const int plaintext_len, const unsigned char* key, const unsigned char* iv, unsigned char* ciphertext ) {
@@ -115,32 +115,32 @@ int decrypt( const unsigned char* ciphertext, const int ciphertext_len, const un
 }
 
 template<class Container>
-Container crypto::padPKCS7( const Container& input, const uint8_t blockSize ) {
+Container crypto::padPKCS7( const Container& input, const size_t blockSize ) {
     size_t size = input.size();
 
-    uint8_t padSize = blockSize - size % blockSize;
+    size_t padSize = blockSize - size % blockSize;
     Container rv = input;
     rv.reserve( size + padSize );
 
     for( uint8_t i = 0; i < padSize; ++i ) {
-        rv.push_back( padSize );
+        rv.push_back( static_cast<typename Container::value_type>( padSize ) );
     }
 
     return rv;
 }
 
-template Bytes crypto::padPKCS7( const Bytes& input, const uint8_t blockSize );
-template std::string crypto::padPKCS7( const std::string& input, const uint8_t blockSize );
+template Bytes crypto::padPKCS7( const Bytes& input, const size_t blockSize );
+template std::string crypto::padPKCS7( const std::string& input, const size_t blockSize );
 
 template<class Container>
 Container crypto::unpadPKCS7( const Container& input ) {
     if( input.empty() ) { return {}; }
 
-    size_t padSize = input.back();
+    size_t padSize = static_cast<size_t>( input.back() );
 
     if( input.size() < padSize ) { return {}; }
 
-    return Container( input.cbegin(), input.cend() - padSize );
+    return Container( input.cbegin(), input.cend() - static_cast<typename Container::difference_type>( padSize ) );
 }
 
 template Bytes crypto::unpadPKCS7( const Bytes& input );
@@ -157,9 +157,9 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
     Bytes padded = padPKCS7( text, openssl::blockSize );
     Bytes cipher( padded.size(), 0 );
 
-    int len = openssl::encrypt( padded.data(), padded.size(), key.data(), nullptr, cipher.data() );
+    int len = openssl::encrypt( padded.data(), static_cast<int>( padded.size() ), key.data(), nullptr, cipher.data() );
 
-    cipher.resize( ( size_t )len );
+    cipher.resize( static_cast<size_t>( len ) );
     return cipher;
 }
 
@@ -172,9 +172,9 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
     Bytes plain( data.size(), 0 );
 
-    int len = openssl::decrypt( data.data(), data.size(), key.data(), nullptr, plain.data() );
+    int len = openssl::decrypt( data.data(), static_cast<int>( data.size() ), key.data(), nullptr, plain.data() );
 
-    plain.resize( ( size_t )len );
+    plain.resize( static_cast<size_t>( len ) );
     plain = unpadPKCS7( plain );
 
     return plain;
