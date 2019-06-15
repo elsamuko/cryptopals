@@ -40,8 +40,10 @@ Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
     return rv;
 }
 
+namespace openssl {
+
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
-int encrypt( unsigned char* plaintext, int plaintext_len, unsigned char* key, unsigned char* iv, unsigned char* ciphertext ) {
+int encrypt( const unsigned char* plaintext, const int plaintext_len, const unsigned char* key, const unsigned char* iv, unsigned char* ciphertext ) {
 
     int ciphertext_len = 0;
 
@@ -75,7 +77,7 @@ int encrypt( unsigned char* plaintext, int plaintext_len, unsigned char* key, un
 }
 
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Decrypting_the_Message
-int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char* key, unsigned char* iv, unsigned char* plaintext ) {
+int decrypt( const unsigned char* ciphertext, const int ciphertext_len, const unsigned char* key, const unsigned char* iv, unsigned char* plaintext ) {
 
     int plaintext_len = 0;
 
@@ -108,6 +110,8 @@ int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char*
     return plaintext_len;
 }
 
+}
+
 Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
 
     size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
@@ -126,7 +130,7 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
     Bytes cipher( plaintext_len + key.size(), 0 );
     unsigned char* c_ciphertext = reinterpret_cast<unsigned char*>( cipher.data() );
 
-    int len = encrypt( c_plaintext, plaintext_len, c_key, c_iv, c_ciphertext );
+    int len = openssl::encrypt( c_plaintext, plaintext_len, c_key, c_iv, c_ciphertext );
 
     cipher.resize( ( size_t )len );
     return cipher;
@@ -150,7 +154,7 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
     Bytes plain( ciphertext_len, 0 );
     unsigned char* c_plaintext = reinterpret_cast<unsigned char*>( plain.data() );
 
-    int len = decrypt( c_ciphertext, ciphertext_len, c_key, c_iv, c_plaintext );
+    int len = openssl::decrypt( c_ciphertext, ciphertext_len, c_key, c_iv, c_plaintext );
 
     plain.resize( ( size_t )len );
     return plain;
