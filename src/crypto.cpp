@@ -42,6 +42,8 @@ Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
 
 namespace openssl {
 
+const size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
 int encrypt( const unsigned char* plaintext, const int plaintext_len, const unsigned char* key, const unsigned char* iv, unsigned char* ciphertext ) {
 
