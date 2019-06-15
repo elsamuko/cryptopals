@@ -10,6 +10,9 @@ Bytes XOR( const Bytes& first, const uint8_t& key );
 Bytes encryptAES128ECB( const Bytes& text, const Bytes& key );
 Bytes decryptAES128ECB( const Bytes& data, const Bytes& key );
 
+Bytes encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv );
+Bytes decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv );
+
 //! pad \p input in PKCS#7 to \p size bytes
 template <class Container>
 Container padPKCS7( const Container& input, const uint8_t blockSize );

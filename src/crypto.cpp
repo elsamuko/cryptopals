@@ -173,3 +173,75 @@ Container crypto::padPKCS7( const Container& input, const uint8_t blockSize ) {
 
 template Bytes crypto::padPKCS7( const Bytes& input, const uint8_t blockSize );
 template std::string crypto::padPKCS7( const std::string& input, const uint8_t blockSize );
+
+Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv ) {
+
+    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+
+    if( key.size() != blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+        return {};
+    }
+
+    if( iv.size() != blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << blockSize );
+        return {};
+    }
+
+    Bytes padded = text;
+
+    if( text.size() % blockSize > 0 ) {
+        padded = crypto::padPKCS7( text, blockSize );
+    }
+
+    size_t steps = padded.size() / blockSize;
+
+    Bytes encrypted = iv;
+    Bytes result;
+
+    for( size_t i = 0; i < steps; ++i ) {
+        Bytes plain = crypto::XOR( encrypted,
+                                   Bytes( padded.cbegin() + ( i + 0 ) * blockSize,
+                                          padded.cbegin() + ( i + 1 ) * blockSize ) );
+        encrypted = crypto::encryptAES128ECB( plain, key );
+        result.insert( result.end(), encrypted.cbegin(), encrypted.cend() );
+    }
+
+    return result;
+}
+
+
+Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv ) {
+    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
+
+    if( key.size() != blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+        return {};
+    }
+
+    if( iv.size() != blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << blockSize );
+        return {};
+    }
+
+    if( data.size() % blockSize != 0 ) {
+        LOG( "Error: Invalid data size " << data.size() << " % " << blockSize << " != 0" );
+        return {};
+    }
+
+    size_t steps = data.size() / blockSize;
+
+    Bytes newIV = iv;
+    Bytes result;
+
+    for( size_t i = 0; i < steps; ++i ) {
+        Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * blockSize,
+                                 data.cbegin() + ( i + 1 ) * blockSize );
+        Bytes decrypted = crypto::decryptAES128ECB( encrypted, key );
+        Bytes plain = crypto::XOR( newIV, decrypted );
+        result.insert( result.end(), plain.cbegin(), plain.cend() );
+        newIV = encrypted;
+    }
+
+    return result;
+}
