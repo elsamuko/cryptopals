@@ -15,6 +15,7 @@ int main() {
 
     // https://cryptopals.com/sets/2
     challenge2_9();
+    challenge2_10();
 
     return 0;
 }
