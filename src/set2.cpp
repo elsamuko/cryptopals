@@ -32,23 +32,23 @@ void challenge2_10() {
     std::string iv =  "0123456789abcdef";
     Bytes viv( iv.cbegin(), iv.cend() );
 
-    std::string plain = "0123456789abcdef";
+    std::string plain = "O THANKS!!! ITS SO MUCH EASIER TO WRITE NOW!!!!!!!";
     Bytes vPlain( plain.begin(), plain.end() );
 
     // ECB
     {
-        // echo -n "0123456789abcdef" | openssl enc -nopad -aes-128-ecb -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)" | xxd -p -c 1000
+        // echo -n 'O THANKS!!! ITS SO MUCH EASIER TO WRITE NOW!!!!!!!' | openssl enc -aes-128-ecb -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)" | xxd -p -c 1000
         Bytes encrypted = crypto::encryptAES128ECB( vPlain, vkey );
-        CHECK_EQ( encrypted, converter::hexToBinary( "201e802f7b6ace6f6cd0a743ba78aead" ) );
+        CHECK_EQ( encrypted, converter::hexToBinary( "2f08fcaadf5183afb9041f560797a7836cec1f18f54052a152349d4b970a31f162ec1ff2a8e0dfcfc7bd2e0e9cacead6ea009ac545c6a406ddcc009f5037bc50" ) );
         Bytes decrypted = crypto::decryptAES128ECB( encrypted, vkey );
         CHECK_EQ( vPlain, decrypted );
     }
 
     // CBC
     {
-        // echo -n "0123456789abcdef" | openssl enc -nopad -aes-128-cbc -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)" -iv "$(echo -n '0123456789abcdef' | xxd -p)" | xxd -p -c 1000
+        // echo -n 'O THANKS!!! ITS SO MUCH EASIER TO WRITE NOW!!!!!!!' | openssl enc -aes-128-cbc -K "$(echo -n 'YELLOW SUBMARINE' | xxd -p)" -iv "$(echo -n '0123456789abcdef' | xxd -p)" | xxd -p -c 1000
         Bytes encrypted = crypto::encryptAES128CBC( vPlain, vkey, viv );
-        CHECK_EQ( encrypted, converter::hexToBinary( "76d1cb4bafa246e2e3af035d6c13c372" ) );
+        CHECK_EQ( encrypted, converter::hexToBinary( "ba41c7ea8826dfb3df62c1b73894b28179034a4fedf16983462e54b34ddeb0e7ce07383fa833a863321f7fa5b867dde6cbb402105357caf7d75463db95efabd6" ) );
         Bytes decrypted = crypto::decryptAES128CBC( encrypted, vkey, viv );
         CHECK_EQ( vPlain, decrypted );
     }
