@@ -56,6 +56,9 @@ int encrypt( unsigned char* plaintext, int plaintext_len, unsigned char* key, un
         int rv = EVP_EncryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
         BREAK_IF( rv != 1, "Error: EVP_EncryptInit_ex returned " << rv );
 
+        rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
+        BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
+
         rv = EVP_EncryptUpdate( ctx.get(), ciphertext, &len, plaintext, plaintext_len );
         BREAK_IF( rv != 1, "Error: EVP_EncryptUpdate returned " << rv );
 
@@ -86,6 +89,9 @@ int decrypt( const unsigned char* ciphertext, int ciphertext_len, unsigned char*
 
         int rv = EVP_DecryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
         BREAK_IF( rv != 1, "Error: EVP_DecryptInit_ex returned " << rv );
+
+        rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
+        BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
 
         rv = EVP_DecryptUpdate( ctx.get(), plaintext, &len, ciphertext, ciphertext_len );
         BREAK_IF( rv != 1, "Error: EVP_DecryptUpdate returned " << rv );
