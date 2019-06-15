@@ -114,54 +114,6 @@ int decrypt( const unsigned char* ciphertext, const int ciphertext_len, const un
 
 }
 
-Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
-
-    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
-
-    if( key.size() != blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
-        return {};
-    }
-
-    unsigned char* c_iv = nullptr;
-    unsigned char* c_key = const_cast<unsigned char*>( key.data() );
-
-    unsigned char* c_plaintext = ( unsigned char* )( text.data() );;
-    int plaintext_len = text.size();
-
-    Bytes cipher( plaintext_len + key.size(), 0 );
-    unsigned char* c_ciphertext = reinterpret_cast<unsigned char*>( cipher.data() );
-
-    int len = openssl::encrypt( c_plaintext, plaintext_len, c_key, c_iv, c_ciphertext );
-
-    cipher.resize( ( size_t )len );
-    return cipher;
-}
-
-Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
-
-    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
-
-    if( key.size() != blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
-        return {};
-    }
-
-    unsigned char* c_iv = nullptr;
-    unsigned char* c_key = const_cast<unsigned char*>( key.data() );
-
-    unsigned char* c_ciphertext = const_cast<unsigned char*>( data.data() );;
-    int ciphertext_len = data.size();
-
-    Bytes plain( ciphertext_len, 0 );
-    unsigned char* c_plaintext = reinterpret_cast<unsigned char*>( plain.data() );
-
-    int len = openssl::decrypt( c_ciphertext, ciphertext_len, c_key, c_iv, c_plaintext );
-
-    plain.resize( ( size_t )len );
-    return plain;
-}
-
 template<class Container>
 Container crypto::padPKCS7( const Container& input, const uint8_t blockSize ) {
     size_t size = input.size();
@@ -194,35 +146,62 @@ Container crypto::unpadPKCS7( const Container& input ) {
 template Bytes crypto::unpadPKCS7( const Bytes& input );
 template std::string crypto::unpadPKCS7( const std::string& input );
 
+
+Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
+
+    if( key.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+        return {};
+    }
+
+    Bytes padded = padPKCS7( text, openssl::blockSize );
+    Bytes cipher( padded.size(), 0 );
+
+    int len = openssl::encrypt( padded.data(), padded.size(), key.data(), nullptr, cipher.data() );
+
+    cipher.resize( ( size_t )len );
+    return cipher;
+}
+
+Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
+
+    if( key.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+        return {};
+    }
+
+    Bytes plain( data.size(), 0 );
+
+    int len = openssl::decrypt( data.data(), data.size(), key.data(), nullptr, plain.data() );
+
+    plain.resize( ( size_t )len );
+    plain = unpadPKCS7( plain );
+
+    return plain;
+}
+
 Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv ) {
 
-    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
-
-    if( key.size() != blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+    if( key.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
         return {};
     }
 
-    if( iv.size() != blockSize ) {
-        LOG( "Error: Invalid iv size " << iv.size() << " != " << blockSize );
+    if( iv.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << openssl::blockSize );
         return {};
     }
 
-    Bytes padded = text;
-
-    if( text.size() % blockSize > 0 ) {
-        padded = crypto::padPKCS7( text, blockSize );
-    }
-
-    size_t steps = padded.size() / blockSize;
+    Bytes padded = crypto::padPKCS7( text, openssl::blockSize );
+    size_t steps = padded.size() / openssl::blockSize;
 
     Bytes encrypted = iv;
     Bytes result;
 
     for( size_t i = 0; i < steps; ++i ) {
         Bytes plain = crypto::XOR( encrypted,
-                                   Bytes( padded.cbegin() + ( i + 0 ) * blockSize,
-                                          padded.cbegin() + ( i + 1 ) * blockSize ) );
+                                   Bytes( padded.cbegin() + ( i + 0 ) * openssl::blockSize,
+                                          padded.cbegin() + ( i + 1 ) * openssl::blockSize ) );
         openssl::encrypt( plain.data(), plain.size(), key.data(), nullptr, encrypted.data() );
         result.insert( result.end(), encrypted.cbegin(), encrypted.cend() );
     }
@@ -232,37 +211,38 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
 
 
 Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv ) {
-    size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );
 
-    if( key.size() != blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << blockSize );
+    if( key.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
         return {};
     }
 
-    if( iv.size() != blockSize ) {
-        LOG( "Error: Invalid iv size " << iv.size() << " != " << blockSize );
+    if( iv.size() != openssl::blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << openssl::blockSize );
         return {};
     }
 
-    if( data.size() % blockSize != 0 ) {
-        LOG( "Error: Invalid data size " << data.size() << " % " << blockSize << " != 0" );
+    if( data.size() % openssl::blockSize != 0 ) {
+        LOG( "Error: Invalid data size " << data.size() << " % " << openssl::blockSize << " != 0" );
         return {};
     }
 
-    size_t steps = data.size() / blockSize;
+    size_t steps = data.size() / openssl::blockSize;
 
     Bytes newIV = iv;
-    Bytes decrypted( blockSize, 0 );
+    Bytes decrypted( openssl::blockSize, 0 );
     Bytes result;
 
     for( size_t i = 0; i < steps; ++i ) {
-        Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * blockSize,
-                                 data.cbegin() + ( i + 1 ) * blockSize );
+        Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * openssl::blockSize,
+                                 data.cbegin() + ( i + 1 ) * openssl::blockSize );
         openssl::decrypt( encrypted.data(), encrypted.size(), key.data(), nullptr, decrypted.data() );
         Bytes plain = crypto::XOR( newIV, decrypted );
         result.insert( result.end(), plain.cbegin(), plain.cend() );
         newIV = encrypted;
     }
+
+    result = unpadPKCS7( result );
 
     return result;
 }
