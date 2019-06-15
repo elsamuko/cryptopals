@@ -178,6 +178,20 @@ Container crypto::padPKCS7( const Container& input, const uint8_t blockSize ) {
 template Bytes crypto::padPKCS7( const Bytes& input, const uint8_t blockSize );
 template std::string crypto::padPKCS7( const std::string& input, const uint8_t blockSize );
 
+template<class Container>
+Container crypto::unpadPKCS7( const Container& input ) {
+    if( input.empty() ) { return {}; }
+
+    size_t padSize = input.back();
+
+    if( input.size() < padSize ) { return {}; }
+
+    return Container( input.cbegin(), input.cend() - padSize );
+}
+
+template Bytes crypto::unpadPKCS7( const Bytes& input );
+template std::string crypto::unpadPKCS7( const std::string& input );
+
 Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv ) {
 
     size_t blockSize = ( size_t )EVP_CIPHER_block_size( EVP_aes_128_ecb() );

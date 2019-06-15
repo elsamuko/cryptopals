@@ -17,4 +17,7 @@ Bytes decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv );
 template <class Container>
 Container padPKCS7( const Container& input, const uint8_t blockSize );
 
+template <class Container>
+Container unpadPKCS7( const Container& input );
+
 }
