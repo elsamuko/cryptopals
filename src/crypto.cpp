@@ -210,7 +210,7 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
                                    Bytes( padded.cbegin() + ( i + 0 ) * openssl::blockSize,
                                           padded.cbegin() + ( i + 1 ) * openssl::blockSize ) );
         openssl::encrypt( plain.data(), plain.size(), key.data(), nullptr, encrypted.data() );
-        result.insert( result.end(), encrypted.cbegin(), encrypted.cend() );
+        result = result + encrypted;
     }
 
     return result;
