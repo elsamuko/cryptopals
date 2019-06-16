@@ -25,4 +25,12 @@ Bytes randBytes( const size_t& size );
 size_t randSize( const size_t& from, const size_t& to );
 bool flipCoin();
 
+// encrypts \p data randomly with CBC or ECB with a generated Key
+struct Encrypted {
+    enum class Type { ECB, CBC };
+    Type type;
+    Bytes bytes;
+};
+Encrypted encryptECBOrCBC( const Bytes& data );
+
 }

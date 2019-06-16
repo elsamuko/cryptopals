@@ -285,3 +285,21 @@ bool crypto::flipCoin() {
     return rv ;
 }
 
+crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
+
+    // prepend and append random data of random size
+    Bytes prefix  = randBytes( randSize( 5, 10 ) );
+    Bytes postfix = randBytes( randSize( 5, 10 ) );
+    Bytes all = prefix + data + postfix;
+
+    // random key and iv
+    Bytes key = genKey();
+    Bytes iv = genKey();
+
+    if( flipCoin() ) {
+        return { Encrypted::Type::CBC, encryptAES128CBC( all, key, iv ) };
+    } else {
+        return { Encrypted::Type::ECB, encryptAES128ECB( all, key ) };
+    }
+}
+
