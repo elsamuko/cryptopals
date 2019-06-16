@@ -161,3 +161,8 @@ std::vector<Bytes> utils::disperse( const Bytes& mono, const size_t& parts ) {
     return many;
 }
 
+
+Bytes& operator+( Bytes& first, const Bytes& second ) {
+    first.insert( first.end(), second.cbegin(), second.cend() );
+    return first;
+}

@@ -36,4 +36,5 @@ size_t hammingDistance( const Container& first, const Container& second );
 
 }
 
+Bytes& operator+( Bytes& first, const Bytes& second );
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes );
