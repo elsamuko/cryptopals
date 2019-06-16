@@ -1,8 +1,10 @@
 #include "crypto.hpp"
 
 #include <memory>
+#include <random>
 
 #include "openssl/evp.h"
+#include "openssl/rand.h"
 
 #include "converter.hpp"
 #include "log.hpp"
@@ -251,3 +253,35 @@ Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes
 
     return result;
 }
+
+Bytes crypto::randBytes( const size_t& size ) {
+    // uninitialized buffer
+    Bytes buffer( size );
+
+    int rv = RAND_bytes( buffer.data(), buffer.size() );
+
+    if( rv != 1 ) {
+        LOG( "Error: EVP_DecryptFinal_ex returned " << rv );
+        return {};
+    }
+
+    return buffer;
+}
+
+Bytes crypto::genKey() {
+    return randBytes( openssl::blockSize );
+}
+
+size_t crypto::randSize( const size_t& from, const size_t& to ) {
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<size_t> distribution( from, to );
+    size_t rv = distribution( gen );
+    return rv ;
+}
+
+bool crypto::flipCoin() {
+    bool rv = bool( randSize( 0, 1 ) );
+    return rv ;
+}
+

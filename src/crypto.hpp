@@ -20,4 +20,9 @@ Container padPKCS7( const Container& input, const size_t blockSize );
 template <class Container>
 Container unpadPKCS7( const Container& input );
 
+Bytes genKey();
+Bytes randBytes( const size_t& size );
+size_t randSize( const size_t& from, const size_t& to );
+bool flipCoin();
+
 }
