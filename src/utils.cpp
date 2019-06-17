@@ -166,3 +166,15 @@ Bytes& operator+( Bytes& first, const Bytes& second ) {
     first.insert( first.end(), second.cbegin(), second.cend() );
     return first;
 }
+
+void utils::toFile( const std::string& filename, const Bytes& data ) {
+    std::ofstream file( filename.c_str(), std::ios::binary | std::ios::out );
+
+    if( !file ) {
+        LOG( "Could not open " << filename << std::endl; )
+        return;
+    }
+
+    file.write( reinterpret_cast<const char*>( data.data() ), data.size() );
+
+}
