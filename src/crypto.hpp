@@ -32,5 +32,6 @@ struct Encrypted {
     Bytes bytes;
 };
 Encrypted encryptECBOrCBC( const Bytes& data );
+std::ostream& operator<<( std::ostream& os, const Encrypted::Type& type );
 
 }

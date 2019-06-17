@@ -303,3 +303,17 @@ crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
     }
 }
 
+
+std::ostream& crypto::operator<<( std::ostream& os, const crypto::Encrypted::Type& type ) {
+    switch( type ) {
+        case crypto::Encrypted::Type::CBC:
+            os << "CBC";
+            break;
+
+        case crypto::Encrypted::Type::ECB:
+            os << "EBC";
+            break;
+    }
+
+    return os;
+}
