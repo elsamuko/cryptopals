@@ -37,6 +37,10 @@ Bytes fromBase64File( const std::string& filename );
 template<class Container>
 size_t hammingDistance( const Container& first, const Container& second );
 
+//! \returns the shannon entropy of data
+//! \sa https://rosettacode.org/wiki/Entropy#C.2B.2B
+float shannonEntropy( const Bytes& data );
+
 }
 
 Bytes& operator+( Bytes& first, const Bytes& second );

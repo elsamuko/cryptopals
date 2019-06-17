@@ -178,3 +178,21 @@ void utils::toFile( const std::string& filename, const Bytes& data ) {
     file.write( reinterpret_cast<const char*>( data.data() ), data.size() );
 
 }
+
+float utils::shannonEntropy( const Bytes& data ) {
+    std::map<uint8_t, size_t> stats ;
+
+    for( const uint8_t c : data ) {
+        ++stats[ c ];
+    }
+
+    size_t size = data.size();
+    float entropy = 0 ;
+
+    for( auto&& stat : stats ) {
+        float frequency = static_cast<float>( stat.second ) / size;
+        entropy -= frequency * log2f( frequency );
+    }
+
+    return entropy;
+}
