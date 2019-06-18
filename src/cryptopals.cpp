@@ -1,14 +1,14 @@
 #include "set1.hpp"
 #include "set2.hpp"
 
-#include <map>
+#include <vector>
 #include <functional>
 
 #include "log.hpp"
 
 int main( int argc, char* argv[] ) {
 
-    const std::map<std::string, std::function<void()>> challenges = {
+    const std::vector<std::pair<std::string, std::function<void()>>> challenges = {
 
         // https://cryptopals.com/sets/1
         { "1.1", challenge1_1 },
@@ -29,7 +29,10 @@ int main( int argc, char* argv[] ) {
 
     // run one challenge
     if( argc == 2 ) {
-        auto it = challenges.find( argv[1] );
+
+        auto it = std::find_if( challenges.cbegin(), challenges.cend(), [argv]( const auto & pair ) {
+            return pair.first == std::string( argv[1] );
+        } );
 
         if( it != challenges.cend() ) {
             it->second();
