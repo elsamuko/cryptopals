@@ -47,6 +47,11 @@ void challenge1_4() {
     LOG( "Running challenge 1.4" );
     std::vector<Bytes> lines = utils::fromHexFile( "1_4.txt" );
 
+    if( lines.empty() ) {
+        LOG( "Error: Could not read 1_4.txt" );
+        return;
+    }
+
     // run calculations async
     std::vector<std::future<utils::Guess>> guesses;
     guesses.reserve( lines.size() );
@@ -105,6 +110,11 @@ void challenge1_6() {
     CHECK_EQ( hase, Bytes( {'H', 'a', 's', 'e' } ) );
 
     Bytes text = utils::fromBase64File( "1_6.txt" );
+
+    if( text.empty() ) {
+        LOG( "Error: Could not read 1_6.txt" );
+        return;
+    }
 
     size_t keySize = 0;
     float bestNormalized = std::numeric_limits<float>::max();
