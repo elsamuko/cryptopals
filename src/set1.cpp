@@ -14,7 +14,6 @@
 #include "log.hpp"
 
 void challenge1_1() {
-    LOG( "Running challenge 1.1" );
     std::string hex = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
     std::string expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
     std::string calculated = converter::hexToBase64( hex );
@@ -22,7 +21,6 @@ void challenge1_1() {
 }
 
 void challenge1_2() {
-    LOG( "Running challenge 1.2" );
     std::string first = "1c0111001f010100061a024b53535009181c";
     std::string second = "686974207468652062756c6c277320657965";
     std::string expected = "746865206b696420646f6e277420706c6179";
@@ -31,7 +29,6 @@ void challenge1_2() {
 }
 
 void challenge1_3() {
-    LOG( "Running challenge 1.3" );
     std::string secret = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     Bytes bytes = converter::hexToBinary( secret );
 
@@ -44,7 +41,6 @@ void challenge1_3() {
 }
 
 void challenge1_4() {
-    LOG( "Running challenge 1.4" );
     std::vector<Bytes> lines = utils::fromHexFile( "1_4.txt" );
 
     if( lines.empty() ) {
@@ -84,7 +80,6 @@ void challenge1_4() {
 }
 
 void challenge1_5() {
-    LOG( "Running challenge 1.5" );
     std::string plain = "Burning 'em, if you ain't quick and nimble\n"
                         "I go crazy when I hear a cymbal";
     Bytes key = {'I', 'C', 'E' };
@@ -98,8 +93,6 @@ void challenge1_5() {
 }
 
 void challenge1_6() {
-    LOG( "Running challenge 1.6" );
-
     std::string test  = "this is a test";
     std::string wokka = "wokka wokka!!!";
     size_t dist = utils::hammingDistance<std::string>( test, wokka );
@@ -168,8 +161,6 @@ void challenge1_6() {
 }
 
 void challenge1_7() {
-    LOG( "Running challenge 1.7" );
-
     std::string opensslVersion = OpenSSL_version( OPENSSL_VERSION );
     CHECK_EQ( "OpenSSL 1.1.1c  28 May 2019", opensslVersion );
 
@@ -192,8 +183,6 @@ void challenge1_7() {
 }
 
 void challenge1_8() {
-    LOG( "Running challenge 1.8" );
-
     std::vector<std::string> lines = utils::fromFile( "1_8.txt" );
     size_t blockSize = 2 * 128 / 8; // 32 chars of a hex string are 128 bit
 

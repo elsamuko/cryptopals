@@ -8,8 +8,6 @@
 #include "log.hpp"
 
 void challenge2_9() {
-    LOG( "Running challenge 2.9" );
-
     std::string text = "YELLOW SUBMARINE";
 
     std::string expected20 = "YELLOW SUBMARINE\x04\x04\x04\x04";
@@ -26,8 +24,6 @@ void challenge2_9() {
 }
 
 void challenge2_10() {
-    LOG( "Running challenge 2.10" );
-
     std::string key = "YELLOW SUBMARINE";
     Bytes vkey( key.cbegin(), key.cend() );
 
@@ -71,7 +67,6 @@ void challenge2_10() {
 }
 
 void challenge2_11() {
-    LOG( "Running challenge 2.11" );
     Bytes key = crypto::genKey();
     CHECK_EQ( key.size(), 16 );
 

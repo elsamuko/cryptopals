@@ -43,6 +43,7 @@ int main( int argc, char* argv[] ) {
     // run all challenges
     else {
         for( auto&& it : challenges ) {
+            LOG( "Running challenge " << it.first );
             it.second();
         }
     }
