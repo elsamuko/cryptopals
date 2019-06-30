@@ -92,7 +92,7 @@ void challenge2_11() {
         dump( enc ); // for analysis with xz compression (./scripts/analyze_ecb_cbc.sh)
 
         std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc.bytes, 16 );
-        CHECK_EQ( enc.type, guess.value() );
+        CHECK_EQ( enc.type, *guess );
     }
 }
 
@@ -105,7 +105,7 @@ void challenge2_12() {
     Bytes data( 4096, 0 );
     Bytes enc = crypto::encryptECBWithSecretPrefix( data );
     std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc, blockSize );
-    CHECK_EQ( guess.value(), crypto::Encrypted::Type::ECB );
+    CHECK_EQ( *guess, crypto::Encrypted::Type::ECB );
 
     // 3 guess first encrypted character
     Bytes data2( blockSize - 1, 0 );
