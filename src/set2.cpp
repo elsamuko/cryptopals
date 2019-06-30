@@ -91,7 +91,7 @@ void challenge2_11() {
         crypto::Encrypted enc = crypto::encryptECBOrCBC( data );
         dump( enc ); // for analysis with xz compression (./scripts/analyze_ecb_cbc.sh)
 
-        std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc.bytes );
+        std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc.bytes, 16 );
         CHECK_EQ( enc.type, guess.value() );
     }
 }
@@ -100,4 +100,26 @@ void challenge2_12() {
     // 1 detect block size
     size_t blockSize = cracker::guessBlockSize( crypto::encryptECBWithSecretPrefix );
     CHECK_EQ( blockSize, 16 );
+
+    // 2 detect ECB mode
+    Bytes data( 4096, 0 );
+    Bytes enc = crypto::encryptECBWithSecretPrefix( data );
+    std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc, blockSize );
+    CHECK_EQ( guess.value(), crypto::Encrypted::Type::ECB );
+
+    // 3 guess first encrypted character
+    Bytes data2( blockSize - 1, 0 );
+    Bytes enc1 = crypto::encryptECBWithSecretPrefix( data2 );
+
+    for( uint8_t sec = 0; sec != std::numeric_limits<uint8_t>::max(); ++sec ) {
+        Bytes enc2 = crypto::encryptECBWithSecretPrefix( data2 + Bytes{ sec } );
+
+        Bytes first1( enc1.cbegin(), enc1.cbegin() + blockSize );
+        Bytes first2( enc2.cbegin(), enc2.cbegin() + blockSize );
+
+        if( first1 == first2 ) {
+            LOG( "First character is probably " << ( char )sec );
+            break;
+        }
+    }
 }
