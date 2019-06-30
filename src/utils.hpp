@@ -13,16 +13,6 @@ namespace utils {
 //! split \p mono into \p parts parts
 std::vector<Bytes> disperse( const Bytes& mono, const size_t& parts );
 
-struct Guess {
-    uint8_t key;
-    float probability;
-};
-//! guess single byte key, \p text has been xor'ed with
-Guess guessKey( const Bytes& text );
-
-using BlockEncryptFunc = std::function < Bytes( const Bytes& ) >;
-size_t guessBlockSize( const BlockEncryptFunc& encryptFunc );
-
 //! analyze, if \p text is an english text
 //! higher is better
 float isEnglishText( const Bytes& text );

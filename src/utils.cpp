@@ -9,7 +9,6 @@
 #include "crypto.hpp"
 #include "log.hpp"
 
-
 Bytes utils::fromBase64File( const std::string& filename ) {
     std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
 
@@ -101,23 +100,6 @@ std::vector<std::string> utils::fromFile( const std::string& filename ) {
     return rv;
 }
 
-utils::Guess utils::guessKey( const Bytes& text ) {
-    float best = 0.f;
-    uint8_t bestKey = 0;
-
-    for( uint8_t key = 0; key != 255; ++key ) {
-        Bytes decrypted = crypto::XOR( text, key );
-        float prob = utils::isEnglishText( decrypted );
-
-        if( prob > best ) {
-            best = prob;
-            bestKey = key;
-        }
-    }
-
-    return {bestKey, best};
-}
-
 template<class Container>
 size_t utils::hammingDistance( const Container& first, const Container& second ) {
     size_t size = first.size();
@@ -198,23 +180,3 @@ float utils::shannonEntropy( const Bytes& data ) {
     return entropy;
 }
 
-size_t utils::guessBlockSize( const utils::BlockEncryptFunc& encryptFunc ) {
-    size_t blockSize = 0;
-    size_t sizeNow = 0;
-    size_t sizePrevious = encryptFunc( Bytes() ).size();
-
-    for( size_t i = 0; i < 32; ++i ) {
-        sizeNow = encryptFunc( Bytes( i, 'A' ) ).size();
-
-        if( sizeNow != sizePrevious ) {
-            blockSize = sizeNow - sizePrevious;
-            break;
-        } else {
-            sizePrevious = sizeNow;
-        }
-    }
-
-    if( !blockSize ) { LOG( "Failed to guess a block size" ); }
-
-    return blockSize;
-}

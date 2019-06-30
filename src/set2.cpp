@@ -4,6 +4,7 @@
 
 #include "utils.hpp"
 #include "crypto.hpp"
+#include "cracker.hpp"
 #include "converter.hpp"
 #include "log.hpp"
 
@@ -134,7 +135,7 @@ void challenge2_11() {
 }
 
 void challenge2_12() {
-    // detect block size
-    size_t blockSize = utils::guessBlockSize( crypto::encryptECBWithSecretPrefix );
+    // 1 detect block size
+    size_t blockSize = cracker::guessBlockSize( crypto::encryptECBWithSecretPrefix );
     CHECK_EQ( blockSize, 16 );
 }

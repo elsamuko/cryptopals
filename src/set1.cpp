@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "utils.hpp"
+#include "cracker.hpp"
 #include "converter.hpp"
 #include "crypto.hpp"
 #include "log.hpp"
@@ -32,7 +33,7 @@ void challenge1_3() {
     std::string secret = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     Bytes bytes = converter::hexToBinary( secret );
 
-    utils::Guess guess = utils::guessKey( bytes );
+    cracker::Guess guess = cracker::guessKey( bytes );
 
     Bytes decrypted = crypto::XOR( bytes, guess.key );
     std::string printable( ( const char* )decrypted.data(), decrypted.size() );
@@ -49,23 +50,23 @@ void challenge1_4() {
     }
 
     // run calculations async
-    std::vector<std::future<utils::Guess>> guesses;
+    std::vector<std::future<cracker::Guess>> guesses;
     guesses.reserve( lines.size() );
 
     for( size_t i = 0; i < lines.size(); ++i ) {
         Bytes line = lines[i];
         guesses.emplace_back( std::async( std::launch::async, [line] {
-            utils::Guess guess = utils::guessKey( line );
+            cracker::Guess guess = cracker::guessKey( line );
             return guess;
         } ) );
     }
 
     // then find best guess
-    utils::Guess best{};
+    cracker::Guess best{};
     size_t bestLine = 0;
 
     for( size_t i = 0; i < guesses.size(); ++i ) {
-        utils::Guess guess = guesses[i].get();
+        cracker::Guess guess = guesses[i].get();
 
         if( guess.probability > best.probability ) {
             best = guess;
@@ -144,7 +145,7 @@ void challenge1_6() {
     std::vector<Bytes> many = utils::disperse( text, keySize );
 
     for( const Bytes& one : many ) {
-        key.push_back( utils::guessKey( one ).key );
+        key.push_back( cracker::guessKey( one ).key );
     }
 
     Bytes decrypted = crypto::XOR( text, key );
