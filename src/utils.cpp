@@ -197,3 +197,24 @@ float utils::shannonEntropy( const Bytes& data ) {
 
     return entropy;
 }
+
+size_t utils::guessBlockSize( const utils::BlockEncryptFunc& encryptFunc ) {
+    size_t blockSize = 0;
+    size_t sizeNow = 0;
+    size_t sizePrevious = encryptFunc( Bytes() ).size();
+
+    for( size_t i = 0; i < 32; ++i ) {
+        sizeNow = encryptFunc( Bytes( i, 'A' ) ).size();
+
+        if( sizeNow != sizePrevious ) {
+            blockSize = sizeNow - sizePrevious;
+            break;
+        } else {
+            sizePrevious = sizeNow;
+        }
+    }
+
+    if( !blockSize ) { LOG( "Failed to guess a block size" ); }
+
+    return blockSize;
+}

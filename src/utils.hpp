@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "types.hpp"
 
 #define CHECK( A ) if( !(A) ) { LOG( "Failed check for "#A ); }
@@ -17,6 +19,9 @@ struct Guess {
 };
 //! guess single byte key, \p text has been xor'ed with
 Guess guessKey( const Bytes& text );
+
+using BlockEncryptFunc = std::function < Bytes( const Bytes& ) >;
+size_t guessBlockSize( const BlockEncryptFunc& encryptFunc );
 
 //! analyze, if \p text is an english text
 //! higher is better
