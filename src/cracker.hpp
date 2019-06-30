@@ -15,6 +15,6 @@ Guess guessKey( const Bytes& text );
 using BlockEncryptFunc = std::function < Bytes( const Bytes& ) >;
 size_t guessBlockSize( const BlockEncryptFunc& encryptFunc );
 
-std::optional<crypto::Encrypted::Type> detectECBorCBC( const Bytes& encrypted );
+std::optional<crypto::Encrypted::Type> detectECBorCBC( const Bytes& encrypted, const size_t& blockSize );
 
 }

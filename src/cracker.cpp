@@ -40,7 +40,7 @@ size_t cracker::guessBlockSize( const cracker::BlockEncryptFunc& encryptFunc ) {
     return blockSize;
 }
 
-std::optional<crypto::Encrypted::Type> cracker::detectECBorCBC( const Bytes& encrypted ) {
+std::optional<crypto::Encrypted::Type> cracker::detectECBorCBC( const Bytes& encrypted, const size_t& blockSize ) {
     std::optional<crypto::Encrypted::Type> guess = {};
 
     //! \note use entropy measurement as decision maker
@@ -58,15 +58,24 @@ std::optional<crypto::Encrypted::Type> cracker::detectECBorCBC( const Bytes& enc
     //! \note use Hamming distance as decision maker
 #else
 
-    if( encrypted.size() < 3 * 16 ) {
+    if( encrypted.size() < 3 * blockSize ) {
         LOG( "Error: Too small sample size" );
         return guess;
     }
 
-    // 2nd and 3rd block should decrypt the same with ECB -> their Hamming distance is 0
-    Bytes second = Bytes( encrypted.cbegin() + 1 * 16, encrypted.cbegin() + 2 * 16 );
-    Bytes third  = Bytes( encrypted.cbegin() + 2 * 16, encrypted.cbegin() + 3 * 16 );
-    size_t dist = utils::hammingDistance<Bytes>( second, third );
+    size_t blockcount = encrypted.size() / blockSize;
+    size_t center = blockcount / 2;
+
+    size_t from1 = ( center - 1 ) * blockSize;
+    size_t to1 = ( center ) * blockSize;
+    size_t from2 = to1;
+    size_t to2 = ( center + 1 ) * blockSize;
+    Bytes::const_iterator start = encrypted.cbegin();
+
+    // center blocks should decrypt the same with ECB -> their Hamming distance is 0
+    Bytes centerLeft  = Bytes( start + from1, start + to1 );
+    Bytes centerRight = Bytes( start + from2, start + to2 );
+    size_t dist = utils::hammingDistance<Bytes>( centerLeft, centerRight );
 
     if( dist == 0 ) {
         guess = crypto::Encrypted::Type::ECB;
