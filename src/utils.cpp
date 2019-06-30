@@ -162,9 +162,10 @@ std::vector<Bytes> utils::disperse( const Bytes& mono, const size_t& parts ) {
 }
 
 
-Bytes& operator+( Bytes& first, const Bytes& second ) {
-    first.insert( first.end(), second.cbegin(), second.cend() );
-    return first;
+Bytes operator+( const Bytes& first, const Bytes& second ) {
+    Bytes merged = first;
+    merged.insert( merged.end(), second.cbegin(), second.cend() );
+    return merged;
 }
 
 void utils::toFile( const std::string& filename, const Bytes& data ) {
