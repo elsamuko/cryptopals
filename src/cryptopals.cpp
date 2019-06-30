@@ -36,6 +36,7 @@ int main( int argc, char* argv[] ) {
         } );
 
         if( it != challenges.cend() ) {
+            LOG( "Running challenge " << it->first );
             it->second();
         } else {
             LOG( argv[1] << " not found" );
