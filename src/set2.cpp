@@ -132,3 +132,9 @@ void challenge2_11() {
         CHECK_EQ( enc.type, guess.value() );
     }
 }
+
+void challenge2_12() {
+    // detect block size
+    size_t blockSize = utils::guessBlockSize( crypto::encryptECBWithSecretPrefix );
+    CHECK_EQ( blockSize, 16 );
+}
