@@ -44,5 +44,5 @@ float shannonEntropy( const Bytes& data );
 
 }
 
-Bytes& operator+( Bytes& first, const Bytes& second );
+Bytes operator+( const Bytes& first, const Bytes& second );
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes );
