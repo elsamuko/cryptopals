@@ -303,6 +303,20 @@ crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
     }
 }
 
+Bytes crypto::encryptECBWithSecretPrefix( const Bytes& data ) {
+    // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+    Bytes key = { 0x61, 0x82, 0xd5, 0x3a, 0x29, 0x82, 0xcb, 0x4f, 0x2d, 0x9e, 0x04, 0x3b, 0xe5, 0xdf, 0x97, 0xb3 };
+
+    std::string base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+                         "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+                         "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+                         "YnkK";
+
+    Bytes postfix = converter::base64ToBinary( base64 );
+    Bytes all = data + postfix;
+
+    return encryptAES128ECB( all, key );
+}
 
 std::ostream& crypto::operator<<( std::ostream& os, const crypto::Encrypted::Type& type ) {
     switch( type ) {
