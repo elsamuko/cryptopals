@@ -2,7 +2,7 @@
 
 #include "log.hpp"
 
-cracker::Guess cracker::guessKey( const Bytes& text ) {
+cracker::GuessedKey cracker::guessKey( const Bytes& text ) {
     float best = 0.f;
     uint8_t bestKey = 0;
 

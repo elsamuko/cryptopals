@@ -33,7 +33,7 @@ void challenge1_3() {
     std::string secret = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     Bytes bytes = converter::hexToBinary( secret );
 
-    cracker::Guess guess = cracker::guessKey( bytes );
+    cracker::GuessedKey guess = cracker::guessKey( bytes );
 
     Bytes decrypted = crypto::XOR( bytes, guess.key );
     std::string printable( ( const char* )decrypted.data(), decrypted.size() );
@@ -50,23 +50,23 @@ void challenge1_4() {
     }
 
     // run calculations async
-    std::vector<std::future<cracker::Guess>> guesses;
+    std::vector<std::future<cracker::GuessedKey>> guesses;
     guesses.reserve( lines.size() );
 
     for( size_t i = 0; i < lines.size(); ++i ) {
         Bytes line = lines[i];
         guesses.emplace_back( std::async( std::launch::async, [line] {
-            cracker::Guess guess = cracker::guessKey( line );
+            cracker::GuessedKey guess = cracker::guessKey( line );
             return guess;
         } ) );
     }
 
     // then find best guess
-    cracker::Guess best{};
+    cracker::GuessedKey best{};
     size_t bestLine = 0;
 
     for( size_t i = 0; i < guesses.size(); ++i ) {
-        cracker::Guess guess = guesses[i].get();
+        cracker::GuessedKey guess = guesses[i].get();
 
         if( guess.probability > best.probability ) {
             best = guess;

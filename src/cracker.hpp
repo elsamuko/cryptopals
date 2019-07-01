@@ -5,12 +5,12 @@
 
 namespace cracker {
 
-struct Guess {
-    uint8_t key;
-    float probability;
+struct GuessedKey {
+    uint8_t key = {0};
+    float probability = {0.f};
 };
 //! guess single byte key, \p text has been xor'ed with
-Guess guessKey( const Bytes& text );
+GuessedKey guessKey( const Bytes& text );
 
 using BlockEncryptFunc = std::function < Bytes( const Bytes& ) >;
 size_t guessBlockSize( const BlockEncryptFunc& encryptFunc );

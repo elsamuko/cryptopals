@@ -98,8 +98,9 @@ void challenge2_11() {
 
 void challenge2_12() {
     // 1 detect block size
-    size_t blockSize = cracker::guessBlockSize( crypto::encryptECBWithSecretPrefix );
-    CHECK_EQ( blockSize, 16 );
+    cracker::GuessedSize guess = cracker::guessBlockSize( crypto::encryptECBWithSecretPrefix );
+    CHECK_EQ( guess.blockSize, 16 );
+    CHECK_EQ( guess.extra, 138 );
 
     // 2 detect ECB mode
     Bytes data( 4096, 0 );
