@@ -105,22 +105,54 @@ void challenge2_12() {
     // 2 detect ECB mode
     Bytes data( 4096, 0 );
     Bytes enc = crypto::encryptECBWithSecretPrefix( data );
-    std::optional<crypto::Encrypted::Type> guess = cracker::detectECBorCBC( enc, blockSize );
-    CHECK_EQ( *guess, crypto::Encrypted::Type::ECB );
+    std::optional<crypto::Encrypted::Type> opt = cracker::detectECBorCBC( enc, guess.blockSize );
+    CHECK_EQ( *opt, crypto::Encrypted::Type::ECB );
 
     // 3 guess first encrypted character
-    Bytes data2( blockSize - 1, 0 );
-    Bytes enc1 = crypto::encryptECBWithSecretPrefix( data2 );
+    std::string secret;
+    secret.reserve( guess.extra );
+    size_t blocks = guess.extra / guess.blockSize;
+    Bytes data3( guess.blockSize, 0 );
 
-    for( uint8_t sec = 0; sec != std::numeric_limits<uint8_t>::max(); ++sec ) {
-        Bytes enc2 = crypto::encryptECBWithSecretPrefix( data2 + Bytes{ sec } );
+    size_t k = 0;
 
-        Bytes first1( enc1.cbegin(), enc1.cbegin() + blockSize );
-        Bytes first2( enc2.cbegin(), enc2.cbegin() + blockSize );
+    // 4,5,6 guess one byte after another
+    for( size_t i = 0; i <= blocks; ++i ) {
+        for( size_t j = 1; j <= guess.blockSize; ++j ) {
 
-        if( first1 == first2 ) {
-            LOG( "First character is probably " << ( char )sec );
-            break;
+            Bytes data2( guess.blockSize - j, 0 );
+            Bytes enc1 = crypto::encryptECBWithSecretPrefix( data2 );
+
+            for( uint8_t sec = 0; sec != std::numeric_limits<uint8_t>::max(); ++sec ) {
+                data3.back() = sec;
+                Bytes enc2 = crypto::encryptECBWithSecretPrefix( data3 );
+
+                Bytes first1( enc1.cbegin() + guess.blockSize * i, enc1.cbegin() + guess.blockSize * ( i + 1 ) );
+                Bytes first2( enc2.cbegin(), enc2.cbegin() + guess.blockSize );
+
+                if( first1 == first2 ) {
+                    // LOG( "[" << ( char )sec << "]" );
+                    secret.push_back( ( char )sec );
+                    // shift forward
+                    std::rotate( data3.begin(), data3.begin() + 1, data3.end() );
+                    break;
+                }
+            }
+
+            // stop after all bytes are read
+            if( ++k == guess.extra ) {
+                goto end;
+            }
         }
     }
+
+end:
+    void();
+
+    std::string expected = "Rollin' in my 5.0\n"
+                           "With my rag-top down so my hair can blow\n"
+                           "The girlies on standby waving just to say hi\n"
+                           "Did you stop? No, I just drove by\n";
+    CHECK_EQ( secret, expected );
+
 }
