@@ -19,25 +19,29 @@ cracker::GuessedKey cracker::guessKey( const Bytes& text ) {
     return {bestKey, best};
 }
 
-size_t cracker::guessBlockSize( const cracker::BlockEncryptFunc& encryptFunc ) {
-    size_t blockSize = 0;
+cracker::GuessedSize cracker::guessBlockSize( const cracker::BlockEncryptFunc& encryptFunc ) {
+    cracker::GuessedSize guess;
+
     size_t sizeNow = 0;
     size_t sizePrevious = encryptFunc( Bytes() ).size();
+    guess.extra = sizePrevious; // max size of extra bytes
 
     for( size_t i = 0; i < 32; ++i ) {
         sizeNow = encryptFunc( Bytes( i, 'A' ) ).size();
 
+        // encryptFunc needs a new block at i bytes
         if( sizeNow != sizePrevious ) {
-            blockSize = sizeNow - sizePrevious;
+            guess.blockSize = sizeNow - sizePrevious;
+            guess.extra -= i;
             break;
         } else {
             sizePrevious = sizeNow;
         }
     }
 
-    if( !blockSize ) { LOG( "Failed to guess a block size" ); }
+    if( !guess.blockSize ) { LOG( "Failed to guess a block size" ); }
 
-    return blockSize;
+    return guess;
 }
 
 std::optional<crypto::Encrypted::Type> cracker::detectECBorCBC( const Bytes& encrypted, const size_t& blockSize ) {
