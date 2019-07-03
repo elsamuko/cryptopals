@@ -180,3 +180,43 @@ float utils::shannonEntropy( const Bytes& data ) {
     return entropy;
 }
 
+
+std::map<std::string, std::string> utils::parseGETParams( const std::string& params ) {
+    std::map<std::string, std::string> parsed;
+    std::vector<std::string> items;
+
+    std::string::const_iterator start = params.cbegin();
+    std::string::const_iterator end   = params.cend();
+    size_t from = 0;
+    size_t to = 0;
+
+    // tokenize by '&'
+    while( ( to = params.find( '&', from ) ) != std::string::npos ) {
+        if( ( start + from ) != ( start + to ) ) {
+            items.emplace_back( start + from, start + to );
+        }
+
+        from = to + 1;
+    }
+
+    // last token, if not empty
+    if( ( start + from ) != end ) {
+        items.emplace_back( start + from, end );
+    }
+
+    // split tokens by '='
+    for( auto&& item : items ) {
+        size_t pos = item.find( '=' );
+
+        if( pos == 0 ) { continue; }
+
+        if( pos != std::string::npos ) {
+            parsed.emplace( item.substr( 0, pos ), item.substr( pos +  1 ) );
+        } else {
+            parsed.emplace( item, "" );
+        }
+    }
+
+    return parsed;
+}
+

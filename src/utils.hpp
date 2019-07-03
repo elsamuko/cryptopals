@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <optional>
+#include <map>
 
 #include "types.hpp"
 
@@ -37,6 +38,10 @@ size_t hammingDistance( const Container& first, const Container& second );
 //! \returns the shannon entropy of data
 //! \sa https://rosettacode.org/wiki/Entropy#C.2B.2B
 float shannonEntropy( const Bytes& data );
+
+//! \param params from a GET request, e.g. foo=bar&baz=qux&zap=zazzle
+//! \returns map with parsed params, e.g. { foo: 'bar', baz: 'qux', zap: 'zazzle' }
+std::map<std::string, std::string> parseGETParams( const std::string& params );
 
 }
 
