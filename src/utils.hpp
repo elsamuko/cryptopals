@@ -47,3 +47,5 @@ std::map<std::string, std::string> parseGETParams( const std::string& params );
 
 Bytes operator+( const Bytes& first, const Bytes& second );
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes );
+template<class A, class B>
+std::ostream& operator<<( std::ostream& os, const std::map<A, B>& map );

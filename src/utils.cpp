@@ -220,3 +220,17 @@ std::map<std::string, std::string> utils::parseGETParams( const std::string& par
     return parsed;
 }
 
+template<class A, class B>
+std::ostream& operator<<( std::ostream& os, const std::map<A, B>& map ) {
+    os << "{" ;
+
+    for( auto&& it : map ) {
+        os << "{" << it.first << ", " << it.second << "}";
+    }
+
+    os << "}" ;
+
+    return os;
+}
+
+template std::ostream& operator<<( std::ostream& os, const std::map<std::string, std::string>& map );
