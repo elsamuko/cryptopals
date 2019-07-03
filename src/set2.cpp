@@ -156,3 +156,12 @@ end:
     CHECK_EQ( secret, expected );
 
 }
+
+void challenge2_13() {
+    std::string params = "foo=bar&====&&baz=qux&zap=zazzle&";
+    std::map<std::string, std::string> parsed = utils::parseGETParams( params );
+    std::map<std::string, std::string> expected = { { "foo", "bar" }, { "baz", "qux" }, {"zap", "zazzle"} };
+
+    CHECK_EQ( parsed, expected );
+}
+
