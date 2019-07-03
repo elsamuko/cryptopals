@@ -234,3 +234,17 @@ std::ostream& operator<<( std::ostream& os, const std::map<A, B>& map ) {
 }
 
 template std::ostream& operator<<( std::ostream& os, const std::map<std::string, std::string>& map );
+
+std::string utils::profileFor( const std::string& mail ) {
+    std::string copy = mail;
+
+    // remove '&' and '='
+    // https://en.wikipedia.org/wiki/Erase%E2%80%93remove_idiom
+    copy.erase( std::remove( copy.begin(), copy.end(), '=' ), copy.end() );
+    copy.erase( std::remove( copy.begin(), copy.end(), '&' ), copy.end() );
+
+    // assemble request
+    std::stringstream request;
+    request << "email=" << copy << "&uid=10&role=user";
+    return request.str();
+}
