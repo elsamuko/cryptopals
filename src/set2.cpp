@@ -158,10 +158,31 @@ end:
 }
 
 void challenge2_13() {
-    std::string params = "foo=bar&====&&baz=qux&zap=zazzle&";
-    std::map<std::string, std::string> parsed = utils::parseGETParams( params );
-    std::map<std::string, std::string> expected = { { "foo", "bar" }, { "baz", "qux" }, {"zap", "zazzle"} };
+    // test parser
+    {
+        std::string params = "foo=bar&====&&baz=qux&zap=zazzle&";
+        std::map<std::string, std::string> parsed = utils::parseGETParams( params );
+        std::map<std::string, std::string> expected = { { "foo", "bar" }, { "baz", "qux" }, {"zap", "zazzle"} };
+        CHECK_EQ( parsed, expected );
+    }
 
-    CHECK_EQ( parsed, expected );
+    // test profile generator
+    {
+        std::string request = utils::profileFor( "hase&@mai=l.com" );
+        std::string expected = "email=hase@mail.com&uid=10&role=user";
+        CHECK_EQ( request, expected );
+    }
+
+    {
+        std::string request = utils::profileFor( "hase@mail.com" );
+        // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+        Bytes key = { 0x12, 0x99, 0x87, 0x0f, 0x15, 0x1a, 0xaa, 0x18, 0x21, 0x64, 0x2e, 0xe8, 0xd8, 0x66, 0x7d, 0xde };
+        Bytes data( request.cbegin(), request.cend() );
+        Bytes encrypted = crypto::encryptAES128ECB( data, key );
+        Bytes decrypted = crypto::decryptAES128ECB( encrypted, key );
+        std::string request2( decrypted.cbegin(), decrypted.cend() );
+        std::map<std::string, std::string> parsed = utils::parseGETParams( request2 );
+        LOG( parsed );
+    }
 }
 
