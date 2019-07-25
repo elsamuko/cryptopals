@@ -173,16 +173,65 @@ void challenge2_13() {
         CHECK_EQ( request, expected );
     }
 
-    {
-        std::string request = utils::profileFor( "hase@mail.com" );
+    // encrypt/decrypt with secret key
+    struct {
         // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
         Bytes key = { 0x12, 0x99, 0x87, 0x0f, 0x15, 0x1a, 0xaa, 0x18, 0x21, 0x64, 0x2e, 0xe8, 0xd8, 0x66, 0x7d, 0xde };
-        Bytes data( request.cbegin(), request.cend() );
-        Bytes encrypted = crypto::encryptAES128ECB( data, key );
-        Bytes decrypted = crypto::decryptAES128ECB( encrypted, key );
-        std::string request2( decrypted.cbegin(), decrypted.cend() );
-        std::map<std::string, std::string> parsed = utils::parseGETParams( request2 );
-        LOG( parsed );
+
+        Bytes encrypt( const std::string& request ) {
+            Bytes data( request.cbegin(), request.cend() );
+            Bytes encrypted = crypto::encryptAES128ECB( data, key );
+            return encrypted;
+        }
+
+        std::string decrypt( const Bytes& encrypted ) {
+            Bytes decrypted = crypto::decryptAES128ECB( encrypted, key );
+            std::string request( decrypted.cbegin(), decrypted.cend() );
+            return request;
+        }
+    } Crypto;
+
+    // get encrypted data for first two ECB blocks, which end with "role="
+    // email=XXXXXXXXXXXXX&uid=10&role=
+    Bytes firstPart;
+    Bytes padding;
+    {
+        std::string rest = "email=&uid=10&role=";
+        std::string fillMail = "bunny@mail.it";
+        CHECK_EQ( fillMail.size() + rest.size(), 32 );
+
+        std::string request = utils::profileFor( fillMail );
+        Bytes encrypted = Crypto.encrypt( request );
+        CHECK_EQ( encrypted.size(), 48 );
+        firstPart.assign( encrypted.cbegin(), encrypted.cbegin() + 32 );
+        padding.assign( encrypted.cbegin() + 32, encrypted.cend() );
+    }
+
+    // get encrypted data for second ECB block which starts with "admin"
+    // email=XXXXXXXXXXadmin&uid=10&role=user
+    //                 ^
+    Bytes secondPart;
+    {
+        std::string rest = "email=";
+        std::string admin = "admin";
+        std::string fillMail = "XXXXXXXXXX" + admin;
+        CHECK_EQ( fillMail.size() + rest.size(), 16 + admin.size() );
+
+        std::string request = utils::profileFor( fillMail );
+        Bytes encrypted = Crypto.encrypt( request );
+        CHECK( encrypted.size() > 32 );
+        secondPart.assign( encrypted.cbegin() + 16, encrypted.cbegin() + 32 );
+    }
+
+    // merge two parts as
+    // email=bunny@mail.it&uid=10&role=admin&uid=10&rol
+    {
+        Bytes merged = firstPart + secondPart + padding;
+        CHECK_EQ( merged.size(), 64 );
+        std::string decrypted = Crypto.decrypt( merged );
+        LOG( decrypted );
+        std::map<std::string, std::string> parsed = utils::parseGETParams( decrypted );
+        CHECK_EQ( parsed["role"], "admin" );
     }
 }
 
