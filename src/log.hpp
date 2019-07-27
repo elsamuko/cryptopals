@@ -22,3 +22,6 @@ class Logger {
 };
 
 #define LOG( A ) Logger(__FILE__, __LINE__, __FUNCTION__) << A;
+
+#define LOG_DEBUG( A )
+// #define LOG_DEBUG( A ) Logger(__FILE__, __LINE__, __FUNCTION__) << A;

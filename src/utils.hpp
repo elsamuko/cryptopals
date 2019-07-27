@@ -7,9 +7,9 @@
 #include "types.hpp"
 
 #define CHECK( A ) if( !(A) ) { LOG( "[FAILURE] : "#A ); } \
-                         else { LOG( "[SUCCESS] : "#A ); }
+                         else { LOG_DEBUG( "[SUCCESS] : "#A ); }
 #define CHECK_EQ( A, B ) if( (A) != (B) ) { LOG( "[FAILURE] : "#A" == "#B", " << A << " != " << B ); } \
-                                     else { LOG( "[SUCCESS] : "#A" == "#B ); }
+                                     else { LOG_DEBUG( "[SUCCESS] : "#A" == "#B ); }
 
 namespace utils {
 
