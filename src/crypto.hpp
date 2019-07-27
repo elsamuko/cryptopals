@@ -32,6 +32,7 @@ struct Encrypted {
     Bytes bytes;
 };
 Bytes encryptECBWithSecretSuffix( const Bytes& data );
+Bytes encryptECBWithRandomPrefixAndSecretSuffix( const Bytes& data );
 Encrypted encryptECBOrCBC( const Bytes& data );
 std::ostream& operator<<( std::ostream& os, const Encrypted::Type& type );
 

@@ -331,3 +331,17 @@ std::ostream& crypto::operator<<( std::ostream& os, const crypto::Encrypted::Typ
 
     return os;
 }
+
+Bytes crypto::encryptECBWithRandomPrefixAndSecretSuffix( const Bytes& data ) {
+    // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+    Bytes key = { 0x3e, 0xb0, 0x62, 0x32, 0x19, 0x3e, 0x12, 0x61, 0xc5, 0x84, 0x45, 0x15, 0x2c, 0x1d, 0x47, 0xb0 };
+
+    static Bytes prefix  = randBytes( randSize( 5, 50 ) );
+
+    // echo -n "Bunny" | xxd -i -c 1000
+    Bytes suffix  = { 0x42, 0x75, 0x6e, 0x6e, 0x79 };
+
+    Bytes all = prefix + data + suffix;
+
+    return encryptAES128ECB( all, key );
+}
