@@ -261,7 +261,7 @@ Bytes crypto::randBytes( const size_t& size ) {
     int rv = RAND_bytes( buffer.data(), buffer.size() );
 
     if( rv != 1 ) {
-        LOG( "Error: EVP_DecryptFinal_ex returned " << rv );
+        LOG( "Error: RAND_bytes returned " << rv );
         return {};
     }
 
@@ -289,8 +289,8 @@ crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
 
     // prepend and append random data of random size
     Bytes prefix  = randBytes( randSize( 5, 10 ) );
-    Bytes postfix = randBytes( randSize( 5, 10 ) );
-    Bytes all = prefix + data + postfix;
+    Bytes suffix = randBytes( randSize( 5, 10 ) );
+    Bytes all = prefix + data + suffix;
 
     // random key and iv
     Bytes key = genKey();
@@ -303,7 +303,7 @@ crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
     }
 }
 
-Bytes crypto::encryptECBWithSecretPrefix( const Bytes& data ) {
+Bytes crypto::encryptECBWithSecretSuffix( const Bytes& data ) {
     // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
     Bytes key = { 0x61, 0x82, 0xd5, 0x3a, 0x29, 0x82, 0xcb, 0x4f, 0x2d, 0x9e, 0x04, 0x3b, 0xe5, 0xdf, 0x97, 0xb3 };
 
@@ -312,8 +312,8 @@ Bytes crypto::encryptECBWithSecretPrefix( const Bytes& data ) {
                          "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
                          "YnkK";
 
-    Bytes postfix = converter::base64ToBinary( base64 );
-    Bytes all = data + postfix;
+    Bytes suffix = converter::base64ToBinary( base64 );
+    Bytes all = data + suffix;
 
     return encryptAES128ECB( all, key );
 }

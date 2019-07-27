@@ -98,13 +98,13 @@ void challenge2_11() {
 
 void challenge2_12() {
     // 1 detect block size
-    cracker::GuessedSize guess = cracker::guessBlockSize( crypto::encryptECBWithSecretPrefix );
+    cracker::GuessedSize guess = cracker::guessBlockSize( crypto::encryptECBWithSecretSuffix );
     CHECK_EQ( guess.blockSize, 16 );
     CHECK_EQ( guess.extra, 138 );
 
     // 2 detect ECB mode
     Bytes data( 4096, 0 );
-    Bytes enc = crypto::encryptECBWithSecretPrefix( data );
+    Bytes enc = crypto::encryptECBWithSecretSuffix( data );
     std::optional<crypto::Encrypted::Type> opt = cracker::detectECBorCBC( enc, guess.blockSize );
     CHECK_EQ( *opt, crypto::Encrypted::Type::ECB );
 
@@ -121,11 +121,11 @@ void challenge2_12() {
         for( size_t j = 1; j <= guess.blockSize; ++j ) {
 
             Bytes data2( guess.blockSize - j, 0 );
-            Bytes enc1 = crypto::encryptECBWithSecretPrefix( data2 );
+            Bytes enc1 = crypto::encryptECBWithSecretSuffix( data2 );
 
             for( uint8_t sec = 0; sec != std::numeric_limits<uint8_t>::max(); ++sec ) {
                 data3.back() = sec;
-                Bytes enc2 = crypto::encryptECBWithSecretPrefix( data3 );
+                Bytes enc2 = crypto::encryptECBWithSecretSuffix( data3 );
 
                 Bytes first1( enc1.cbegin() + guess.blockSize * i, enc1.cbegin() + guess.blockSize * ( i + 1 ) );
                 Bytes first2( enc2.cbegin(), enc2.cbegin() + guess.blockSize );

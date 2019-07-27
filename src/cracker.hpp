@@ -14,7 +14,7 @@ GuessedKey guessKey( const Bytes& text );
 
 struct GuessedSize {
     size_t blockSize = {0};
-    size_t extra = {0}; // size of postfix + prefix bytes
+    size_t extra = {0}; // size of suffix + prefix bytes
 };
 using BlockEncryptFunc = std::function < Bytes( const Bytes& ) >;
 GuessedSize guessBlockSize( const BlockEncryptFunc& encryptFunc );
