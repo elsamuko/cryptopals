@@ -24,23 +24,70 @@ cracker::GuessedSize cracker::guessBlockSize( const cracker::BlockEncryptFunc& e
 
     size_t sizeNow = 0;
     size_t sizePrevious = encryptFunc( Bytes() ).size();
-    guess.extra = sizePrevious; // max size of extra bytes
+    size_t extra = sizePrevious; // max size of extra bytes
 
+    // guess prefix + suffix size
     for( size_t i = 0; i < 32; ++i ) {
-        sizeNow = encryptFunc( Bytes( i, 'A' ) ).size();
+        sizeNow = encryptFunc( Bytes( i, '\0' ) ).size();
 
         // encryptFunc needs a new block at i bytes
         if( sizeNow != sizePrevious ) {
             guess.blockSize = sizeNow - sizePrevious;
-            guess.extra -= i;
+            extra -= i;
             break;
         } else {
             sizePrevious = sizeNow;
         }
     }
 
-    if( !guess.blockSize ) { LOG( "Failed to guess a block size" ); }
+    if( !guess.blockSize ) {
+        LOG( "Failed to guess a block size" );
+        return guess;
+    }
 
+    // assuming ECB, when two consecutive blocks are the same -> the rest is suffix only
+    size_t suffixStart = 0;
+
+    for( size_t i = 0; i < 1024; ++i ) {
+        Bytes encrypted = encryptFunc( Bytes( i, '\0' ) );
+        size_t blocks = encrypted.size() / guess.blockSize;
+
+        if( blocks < 2 ) { continue; }
+
+        for( size_t j = 0; j < blocks - 2; ++j ) {
+
+            Bytes first( encrypted.cbegin() + ( j + 0 ) * guess.blockSize,
+                         encrypted.cbegin() + ( j + 1 ) * guess.blockSize );
+            Bytes second( encrypted.cbegin() + ( j + 1 ) * guess.blockSize,
+                          encrypted.cbegin() + ( j + 2 ) * guess.blockSize );
+
+            // then rest is suffix
+            if( first == second ) {
+                suffixStart = i;
+                sizePrevious = encrypted.size();
+                // max suffix size
+                guess.suffix = encrypted.size() - ( j + 2 ) * guess.blockSize;
+                goto next;
+            }
+        }
+    }
+
+next:
+
+    // guess suffix size
+    for( size_t i = suffixStart; i < suffixStart + guess.blockSize; ++i ) {
+        sizeNow = encryptFunc( Bytes( i, '\0' ) ).size();
+
+        // encryptFunc needs a new block at i bytes
+        if( sizeNow != sizePrevious ) {
+            guess.suffix -= ( i - suffixStart );
+            break;
+        } else {
+            sizePrevious = sizeNow;
+        }
+    }
+
+    guess.prefix = extra - guess.suffix;
     return guess;
 }
 
