@@ -100,7 +100,7 @@ void challenge2_12() {
     // 1 detect block size
     cracker::GuessedSize guess = cracker::guessBlockSize( crypto::encryptECBWithSecretSuffix );
     CHECK_EQ( guess.blockSize, 16 );
-    CHECK_EQ( guess.extra, 138 );
+    CHECK_EQ( guess.suffix, 138 );
 
     // 2 detect ECB mode
     Bytes data( 4096, 0 );
@@ -110,16 +110,17 @@ void challenge2_12() {
 
     // 3 guess first encrypted character
     std::string secret;
-    secret.reserve( guess.extra );
-    size_t blocks = guess.extra / guess.blockSize;
+    secret.reserve( guess.suffix );
+    size_t blocks = 1 + guess.suffix / guess.blockSize;
     Bytes data3( guess.blockSize, 0 );
 
-    size_t k = 0;
+    size_t guessed = 0;
 
     // 4,5,6 guess one byte after another
-    for( size_t i = 0; i <= blocks; ++i ) {
+    for( size_t i = 0; i < blocks; ++i ) {
         for( size_t j = 1; j <= guess.blockSize; ++j ) {
 
+            // 000000000000000S UFFIX
             Bytes data2( guess.blockSize - j, 0 );
             Bytes enc1 = crypto::encryptECBWithSecretSuffix( data2 );
 
@@ -140,7 +141,7 @@ void challenge2_12() {
             }
 
             // stop after all bytes are read
-            if( ++k == guess.extra ) {
+            if( ++guessed == guess.suffix ) {
                 goto end;
             }
         }
