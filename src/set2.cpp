@@ -236,3 +236,75 @@ void challenge2_13() {
     }
 }
 
+void challenge2_14() {
+    // detect block size and prefix/suffix size assuming the random prefix is static
+    cracker::GuessedSize guess = cracker::guessBlockSize( crypto::encryptECBWithRandomPrefixAndSecretSuffix );
+    CHECK_EQ( guess.blockSize, 16 );
+    LOG( "prefix: " << guess.prefix );
+    LOG( "suffix: " << guess.suffix );
+
+    // detect ECB mode
+    Bytes data( 4096, 0 );
+    Bytes enc = crypto::encryptECBWithRandomPrefixAndSecretSuffix( data );
+    std::optional<crypto::Encrypted::Type> opt = cracker::detectECBorCBC( enc, guess.blockSize );
+    CHECK_EQ( *opt, crypto::Encrypted::Type::ECB );
+
+    // guess last encrypted character
+    std::string secret;
+    secret.reserve( guess.suffix );
+
+    // PREFIX0000000000
+    size_t rest = ( guess.blockSize - guess.prefix % guess.blockSize ) % guess.blockSize;
+    Bytes data3( rest + guess.blockSize, 0 );
+
+    // max blocks we have to iterate to guess the whole secret string
+    size_t blocks = 1 + guess.suffix / guess.blockSize;
+
+    // offset to 'guessing block'
+    size_t offset = guess.prefix / guess.blockSize + ( ( guess.prefix % guess.blockSize ) ? 1 : 0 );
+    LOG( "Guessing " << blocks << " blocks starting with " << offset << " blocks offset" );
+
+    size_t guessed = 0;
+
+    // guess one byte after another
+    for( size_t i = 0; i < blocks; ++i ) {
+        for( size_t j = 1; j <= guess.blockSize; ++j ) {
+
+            // PREFIX0000000000 000000000000000S UFFIX
+            Bytes data2( rest + guess.blockSize - j, 0 );
+            Bytes enc1 = crypto::encryptECBWithRandomPrefixAndSecretSuffix( data2 );
+
+            for( uint8_t sec = 0; sec != std::numeric_limits<uint8_t>::max(); ++sec ) {
+                data3.back() = sec;
+                Bytes enc2 = crypto::encryptECBWithRandomPrefixAndSecretSuffix( data3 );
+
+                Bytes first1( enc1.cbegin() + guess.blockSize * ( offset + i + 0 ),
+                              enc1.cbegin() + guess.blockSize * ( offset + i + 1 ) );
+                Bytes first2( enc2.cbegin() + guess.blockSize * ( offset + 0 ),
+                              enc2.cbegin() + guess.blockSize * ( offset + 1 ) );
+
+                if( first1 == first2 ) {
+                    // LOG( "[" << ( char )sec << "]" );
+                    secret.push_back( ( char )sec );
+                    // shift forward
+                    std::rotate( data3.begin(), data3.begin() + 1, data3.end() );
+                    break;
+                }
+            }
+
+            // stop after all bytes are read
+            if( ++guessed == guess.suffix ) {
+                goto end;
+            }
+        }
+    }
+
+end:
+    void();
+
+    std::string expected = "Rollin' in my 5.0\n"
+                           "With my rag-top down so my hair can blow\n"
+                           "The girlies on standby waving just to say hi\n"
+                           "Did you stop? No, I just drove by\n";
+    CHECK_EQ( secret, expected );
+}

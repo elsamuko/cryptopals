@@ -27,6 +27,7 @@ int main( int argc, char* argv[] ) {
         { "2.11", challenge2_11 },
         { "2.12", challenge2_12 },
         { "2.13", challenge2_13 },
+        { "2.14", challenge2_14 },
 
     };
 
