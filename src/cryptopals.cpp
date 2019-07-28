@@ -31,18 +31,21 @@ int main( int argc, char* argv[] ) {
     };
 
     // run one challenge
-    if( argc == 2 ) {
+    if( argc > 1 ) {
 
-        auto it = std::find_if( challenges.cbegin(), challenges.cend(), [argv]( const auto & pair ) {
-            return pair.first == std::string( argv[1] );
-        } );
+        for( int arg = 1; arg < argc; ++arg ) {
+            auto it = std::find_if( challenges.cbegin(), challenges.cend(), [argv, arg]( const auto & pair ) {
+                return pair.first == std::string( argv[arg] );
+            } );
 
-        if( it != challenges.cend() ) {
-            LOG( "Running challenge " << it->first );
-            it->second();
-        } else {
-            LOG( argv[1] << " not found" );
+            if( it != challenges.cend() ) {
+                LOG( "Running challenge " << it->first );
+                it->second();
+            } else {
+                LOG( argv[arg] << " not found" );
+            }
         }
+
     }
     // run all challenges
     else {
