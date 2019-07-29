@@ -9,7 +9,7 @@ CONFIG(debug, debug|release) {
     COMPILE_FLAG=d
 }
 
-LIBS += delayimp.lib Advapi32.lib User32.lib Crypt32.lib Ws2_32.lib
+LIBS += delayimp.lib Advapi32.lib User32.lib Crypt32.lib Ws2_32.lib Bcrypt.lib
 
 QMAKE_LFLAGS += /DELAYLOAD:Advapi32.dll \
                 /DELAYLOAD:User32.dll \

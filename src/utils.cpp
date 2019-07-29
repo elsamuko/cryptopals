@@ -4,6 +4,7 @@
 #include <cmath>
 #include <fstream>
 #include <bitset>
+#include <algorithm>
 
 #include "converter.hpp"
 #include "crypto.hpp"
