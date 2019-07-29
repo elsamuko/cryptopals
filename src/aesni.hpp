@@ -89,7 +89,7 @@ namespace aesni {
 const size_t blockSize = 16;
 const size_t rounds = 10;
 
-inline void encryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t length, const uint8_t* userkey ) {
+inline size_t encryptAES128ECB( const uint8_t* plaintext, uint8_t* ciphertext, const size_t length, const uint8_t* userkey ) {
     size_t j = 0;
     size_t blocks = length / 16;
     __m128i tmp;
@@ -97,7 +97,7 @@ inline void encryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t leng
     std::vector<__m128i> key = AES_128_Key_Expansion( ( __m128i* )userkey );
 
     for( size_t i = 0; i < blocks; ++i ) {
-        tmp = _mm_loadu_si128( &( ( __m128i* )in )[i] );
+        tmp = _mm_loadu_si128( &( ( __m128i* )plaintext )[i] );
         tmp = _mm_xor_si128( tmp, key[0] );
 
         for( j = 1; j < rounds; j++ ) {
@@ -105,11 +105,13 @@ inline void encryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t leng
         }
 
         tmp = _mm_aesenclast_si128( tmp, key[j] );
-        _mm_storeu_si128( &( ( __m128i* )out )[i], tmp );
+        _mm_storeu_si128( &( ( __m128i* )ciphertext )[i], tmp );
     }
+
+    return length;
 }
 
-inline void decryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t length, const uint8_t* userkey ) {
+inline size_t decryptAES128ECB( const uint8_t* ciphertext, uint8_t* plaintext, const size_t length, const uint8_t* userkey ) {
     size_t j = 0;
     size_t blocks = length / 16;
     __m128i tmp;
@@ -117,7 +119,7 @@ inline void decryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t leng
     std::vector<__m128i> key = AES_128_Key_Expansion( ( __m128i* )userkey );
 
     for( size_t i = 0; i < blocks; ++i ) {
-        tmp = _mm_loadu_si128( &( ( __m128i* )in )[i] );
+        tmp = _mm_loadu_si128( &( ( __m128i* )ciphertext )[i] );
         tmp = _mm_xor_si128( tmp, key[10] );
 
         for( j = 1; j < rounds; j++ ) {
@@ -125,8 +127,10 @@ inline void decryptAES128ECB( const uint8_t* in, uint8_t* out, const size_t leng
         }
 
         tmp = _mm_aesdeclast_si128( tmp, key[0] );
-        _mm_storeu_si128( &( ( __m128i* )out )[i], tmp );
+        _mm_storeu_si128( &( ( __m128i* )plaintext )[i], tmp );
     }
+
+    return length;
 }
 
 }

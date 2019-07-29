@@ -81,7 +81,7 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
     Bytes padded = padPKCS7( text, crypto::blockSize );
     Bytes cipher( padded.size(), 0 );
 
-    int len = openssl::encrypt( padded.data(), static_cast<int>( padded.size() ), key.data(), nullptr, cipher.data() );
+    int len = openssl::encryptAES128ECB( padded.data(), cipher.data(), padded.size(), key.data() );
 
     cipher.resize( static_cast<size_t>( len ) );
     return cipher;
@@ -101,7 +101,7 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
     Bytes plain( data.size(), 0 );
 
-    int len = openssl::decrypt( data.data(), static_cast<int>( data.size() ), key.data(), nullptr, plain.data() );
+    int len = openssl::decryptAES128ECB( data.data(), plain.data(), data.size(), key.data() );
 
     plain.resize( static_cast<size_t>( len ) );
     plain = unpadPKCS7( plain );
@@ -131,7 +131,7 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
         Bytes plain = crypto::XOR( encrypted,
                                    Bytes( padded.cbegin() + ( i + 0 ) * crypto::blockSize,
                                           padded.cbegin() + ( i + 1 ) * crypto::blockSize ) );
-        openssl::encrypt( plain.data(), plain.size(), key.data(), nullptr, encrypted.data() );
+        openssl::encryptAES128ECB( plain.data(), encrypted.data(), plain.size(), key.data() );
         result = result + encrypted;
     }
 
@@ -165,7 +165,7 @@ Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes
     for( size_t i = 0; i < steps; ++i ) {
         Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * crypto::blockSize,
                                  data.cbegin() + ( i + 1 ) * crypto::blockSize );
-        openssl::decrypt( encrypted.data(), encrypted.size(), key.data(), nullptr, decrypted.data() );
+        openssl::decryptAES128ECB( encrypted.data(), decrypted.data(), encrypted.size(), key.data() );
         Bytes plain = crypto::XOR( newIV, decrypted );
         result.insert( result.end(), plain.cbegin(), plain.cend() );
         newIV = encrypted;

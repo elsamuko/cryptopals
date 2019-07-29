@@ -12,9 +12,9 @@
 namespace openssl {
 
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
-inline int encrypt( const unsigned char* plaintext, const int plaintext_len, const unsigned char* key, const unsigned char* iv, unsigned char* ciphertext ) {
+inline size_t encryptAES128ECB( const uint8_t* plaintext, uint8_t* ciphertext, const size_t length, const uint8_t* userkey ) {
 
-    int ciphertext_len = 0;
+    size_t ciphertext_len = 0;
 
     do {
         int len = 0;
@@ -24,13 +24,13 @@ inline int encrypt( const unsigned char* plaintext, const int plaintext_len, con
         } );
         BREAK_IF( !ctx, "Error: Invalid ctx" );
 
-        int rv = EVP_EncryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
+        int rv = EVP_EncryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, userkey, nullptr );
         BREAK_IF( rv != 1, "Error: EVP_EncryptInit_ex returned " << rv );
 
         rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
         BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
 
-        rv = EVP_EncryptUpdate( ctx.get(), ciphertext, &len, plaintext, plaintext_len );
+        rv = EVP_EncryptUpdate( ctx.get(), ciphertext, &len, plaintext, length );
         BREAK_IF( rv != 1, "Error: EVP_EncryptUpdate returned " << rv );
 
         ciphertext_len = len;
@@ -46,9 +46,9 @@ inline int encrypt( const unsigned char* plaintext, const int plaintext_len, con
 }
 
 // https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Decrypting_the_Message
-inline int decrypt( const unsigned char* ciphertext, const int ciphertext_len, const unsigned char* key, const unsigned char* iv, unsigned char* plaintext ) {
+inline size_t decryptAES128ECB( const uint8_t* ciphertext, uint8_t* plaintext, const size_t length, const uint8_t* userkey ) {
 
-    int plaintext_len = 0;
+    size_t plaintext_len = 0;
 
     do {
         int len = 0;
@@ -58,13 +58,13 @@ inline int decrypt( const unsigned char* ciphertext, const int ciphertext_len, c
         } );
         BREAK_IF( !ctx, "Error: Invalid ctx" );
 
-        int rv = EVP_DecryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
+        int rv = EVP_DecryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, userkey, nullptr );
         BREAK_IF( rv != 1, "Error: EVP_DecryptInit_ex returned " << rv );
 
         rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
         BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
 
-        rv = EVP_DecryptUpdate( ctx.get(), plaintext, &len, ciphertext, ciphertext_len );
+        rv = EVP_DecryptUpdate( ctx.get(), plaintext, &len, ciphertext, length );
         BREAK_IF( rv != 1, "Error: EVP_DecryptUpdate returned " << rv );
 
         plaintext_len = len;
