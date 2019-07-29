@@ -1,7 +1,5 @@
 #include "set1.hpp"
 
-#include "openssl/crypto.h"
-
 #include <map>
 #include <cmath>
 #include <limits>
@@ -162,9 +160,6 @@ void challenge1_6() {
 }
 
 void challenge1_7() {
-    std::string opensslVersion = OpenSSL_version( OPENSSL_VERSION );
-    CHECK_EQ( "OpenSSL 1.1.1c  28 May 2019", opensslVersion );
-
     std::string key = "YELLOW SUBMARINE";
     Bytes vkey( key.cbegin(), key.cend() );
     Bytes encrypted = utils::fromBase64File( "1_7.txt" );

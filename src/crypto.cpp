@@ -4,8 +4,16 @@
 #include <random>
 
 #include "converter.hpp"
-#include "openssl.hpp"
+#include "random.hpp"
 #include "log.hpp"
+
+#if 0
+#include "openssl.hpp"
+namespace aes = openssl;
+#else
+#include "aesni.hpp"
+namespace aes = aesni;
+#endif
 
 Bytes crypto::XOR( const Bytes& first, const Bytes& second ) {
     size_t size1 = first.size();
@@ -81,7 +89,7 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
     Bytes padded = padPKCS7( text, crypto::blockSize );
     Bytes cipher( padded.size(), 0 );
 
-    int len = openssl::encryptAES128ECB( padded.data(), cipher.data(), padded.size(), key.data() );
+    int len = aes::encryptAES128ECB( padded.data(), cipher.data(), padded.size(), key.data() );
 
     cipher.resize( static_cast<size_t>( len ) );
     return cipher;
@@ -101,7 +109,7 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
     Bytes plain( data.size(), 0 );
 
-    int len = openssl::decryptAES128ECB( data.data(), plain.data(), data.size(), key.data() );
+    int len = aes::decryptAES128ECB( data.data(), plain.data(), data.size(), key.data() );
 
     plain.resize( static_cast<size_t>( len ) );
     plain = unpadPKCS7( plain );
@@ -131,7 +139,7 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
         Bytes plain = crypto::XOR( encrypted,
                                    Bytes( padded.cbegin() + ( i + 0 ) * crypto::blockSize,
                                           padded.cbegin() + ( i + 1 ) * crypto::blockSize ) );
-        openssl::encryptAES128ECB( plain.data(), encrypted.data(), plain.size(), key.data() );
+        aes::encryptAES128ECB( plain.data(), encrypted.data(), plain.size(), key.data() );
         result = result + encrypted;
     }
 
@@ -165,7 +173,7 @@ Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes
     for( size_t i = 0; i < steps; ++i ) {
         Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * crypto::blockSize,
                                  data.cbegin() + ( i + 1 ) * crypto::blockSize );
-        openssl::decryptAES128ECB( encrypted.data(), decrypted.data(), encrypted.size(), key.data() );
+        aes::decryptAES128ECB( encrypted.data(), decrypted.data(), encrypted.size(), key.data() );
         Bytes plain = crypto::XOR( newIV, decrypted );
         result.insert( result.end(), plain.cbegin(), plain.cend() );
         newIV = encrypted;
@@ -176,22 +184,9 @@ Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes
     return result;
 }
 
-Bytes crypto::randBytes( const size_t& size ) {
-    // uninitialized buffer
-    Bytes buffer( size );
-
-    int rv = RAND_bytes( buffer.data(), buffer.size() );
-
-    if( rv != 1 ) {
-        LOG( "Error: RAND_bytes returned " << rv );
-        return {};
-    }
-
-    return buffer;
-}
 
 Bytes crypto::genKey() {
-    return randBytes( crypto::blockSize );
+    return randombuffer::get( crypto::blockSize );
 }
 
 size_t crypto::randSize( const size_t& from, const size_t& to ) {
@@ -210,8 +205,8 @@ bool crypto::flipCoin() {
 crypto::Encrypted crypto::encryptECBOrCBC( const Bytes& data ) {
 
     // prepend and append random data of random size
-    Bytes prefix  = randBytes( randSize( 5, 10 ) );
-    Bytes suffix = randBytes( randSize( 5, 10 ) );
+    Bytes prefix  = randombuffer::get( randSize( 5, 10 ) );
+    Bytes suffix = randombuffer::get( randSize( 5, 10 ) );
     Bytes all = prefix + data + suffix;
 
     // random key and iv
@@ -258,7 +253,7 @@ Bytes crypto::encryptECBWithRandomPrefixAndSecretSuffix( const Bytes& data ) {
     // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
     Bytes key = { 0x3e, 0xb0, 0x62, 0x32, 0x19, 0x3e, 0x12, 0x61, 0xc5, 0x84, 0x45, 0x15, 0x2c, 0x1d, 0x47, 0xb0 };
 
-    static Bytes prefix  = randBytes( randSize( 0, 50 ) );
+    static Bytes prefix  = randombuffer::get( randSize( 0, 50 ) );
 
     std::string base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
                          "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"

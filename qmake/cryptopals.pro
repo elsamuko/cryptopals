@@ -26,7 +26,7 @@ HEADERS += $${SRC_DIR}/set2.hpp
 SOURCES += $${SRC_DIR}/set2.cpp
 
 include( setup.pri )
-include( openssl.pri )
+# include( openssl.pri )
 linux: include( linux.pri )
 win32: include( win.pri )
 macx:  include( mac.pri )
