@@ -3,6 +3,8 @@
 #include "utils.hpp"
 
 namespace crypto {
+const size_t blockSize = 16;
+
 std::string XOR( const std::string& first, const std::string& second );
 Bytes XOR( const Bytes& first, const Bytes& second );
 Bytes XOR( const Bytes& first, const uint8_t& key );

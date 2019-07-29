@@ -3,13 +3,9 @@
 #include <memory>
 #include <random>
 
-#include "openssl/evp.h"
-#include "openssl/rand.h"
-
 #include "converter.hpp"
+#include "openssl.hpp"
 #include "log.hpp"
-
-#define BREAK_IF( COND, MSG ) if( ( COND ) ) { LOG( MSG ); break; }
 
 Bytes crypto::XOR( const Bytes& first, const Bytes& second ) {
     size_t size1 = first.size();
@@ -42,79 +38,6 @@ Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
     return rv;
 }
 
-namespace openssl {
-
-const size_t blockSize = static_cast<size_t>( EVP_CIPHER_block_size( EVP_aes_128_ecb() ) );
-
-// https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Encrypting_the_message
-int encrypt( const unsigned char* plaintext, const int plaintext_len, const unsigned char* key, const unsigned char* iv, unsigned char* ciphertext ) {
-
-    int ciphertext_len = 0;
-
-    do {
-        int len = 0;
-
-        std::shared_ptr<EVP_CIPHER_CTX> ctx( EVP_CIPHER_CTX_new(), []( EVP_CIPHER_CTX * ctx ) {
-            EVP_CIPHER_CTX_free( ctx );
-        } );
-        BREAK_IF( !ctx, "Error: Invalid ctx" );
-
-        int rv = EVP_EncryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
-        BREAK_IF( rv != 1, "Error: EVP_EncryptInit_ex returned " << rv );
-
-        rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
-        BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
-
-        rv = EVP_EncryptUpdate( ctx.get(), ciphertext, &len, plaintext, plaintext_len );
-        BREAK_IF( rv != 1, "Error: EVP_EncryptUpdate returned " << rv );
-
-        ciphertext_len = len;
-
-        rv = EVP_EncryptFinal_ex( ctx.get(), ciphertext + len, &len );
-        BREAK_IF( rv != 1, "Error: EVP_EncryptFinal_ex returned " << rv );
-
-        ciphertext_len += len;
-
-    } while( false );
-
-    return ciphertext_len;
-}
-
-// https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#Decrypting_the_Message
-int decrypt( const unsigned char* ciphertext, const int ciphertext_len, const unsigned char* key, const unsigned char* iv, unsigned char* plaintext ) {
-
-    int plaintext_len = 0;
-
-    do {
-        int len = 0;
-
-        std::shared_ptr<EVP_CIPHER_CTX> ctx( EVP_CIPHER_CTX_new(), []( EVP_CIPHER_CTX * ctx ) {
-            EVP_CIPHER_CTX_free( ctx );
-        } );
-        BREAK_IF( !ctx, "Error: Invalid ctx" );
-
-        int rv = EVP_DecryptInit_ex( ctx.get(), EVP_aes_128_ecb(), nullptr, key, iv );
-        BREAK_IF( rv != 1, "Error: EVP_DecryptInit_ex returned " << rv );
-
-        rv = EVP_CIPHER_CTX_set_padding( ctx.get(), 0 );
-        BREAK_IF( rv != 1, "Error: EVP_CIPHER_CTX_set_padding returned " << rv );
-
-        rv = EVP_DecryptUpdate( ctx.get(), plaintext, &len, ciphertext, ciphertext_len );
-        BREAK_IF( rv != 1, "Error: EVP_DecryptUpdate returned " << rv );
-
-        plaintext_len = len;
-
-        rv = EVP_DecryptFinal_ex( ctx.get(), plaintext + len, &len );
-        BREAK_IF( rv != 1, "Error: EVP_DecryptFinal_ex returned " << rv );
-
-        plaintext_len += len;
-
-    } while( false );
-
-    return plaintext_len;
-}
-
-}
 
 template<class Container>
 Container crypto::padPKCS7( const Container& input, const size_t blockSize ) {
@@ -148,15 +71,14 @@ Container crypto::unpadPKCS7( const Container& input ) {
 template Bytes crypto::unpadPKCS7( const Bytes& input );
 template std::string crypto::unpadPKCS7( const std::string& input );
 
-
 Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
 
-    if( key.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+    if( key.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    Bytes padded = padPKCS7( text, openssl::blockSize );
+    Bytes padded = padPKCS7( text, crypto::blockSize );
     Bytes cipher( padded.size(), 0 );
 
     int len = openssl::encrypt( padded.data(), static_cast<int>( padded.size() ), key.data(), nullptr, cipher.data() );
@@ -167,13 +89,13 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
 
 Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
-    if( key.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+    if( key.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    if( data.size() % openssl::blockSize != 0 ) {
-        LOG( "Error: Invalid data size " << data.size() << " % " << openssl::blockSize << " != 0" );
+    if( data.size() % crypto::blockSize != 0 ) {
+        LOG( "Error: Invalid data size " << data.size() << " % " << crypto::blockSize << " != 0" );
         return {};
     }
 
@@ -189,26 +111,26 @@ Bytes crypto::decryptAES128ECB( const Bytes& data, const Bytes& key ) {
 
 Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv ) {
 
-    if( key.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+    if( key.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    if( iv.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid iv size " << iv.size() << " != " << openssl::blockSize );
+    if( iv.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    Bytes padded = crypto::padPKCS7( text, openssl::blockSize );
-    size_t steps = padded.size() / openssl::blockSize;
+    Bytes padded = crypto::padPKCS7( text, crypto::blockSize );
+    size_t steps = padded.size() / crypto::blockSize;
 
     Bytes encrypted = iv;
     Bytes result;
 
     for( size_t i = 0; i < steps; ++i ) {
         Bytes plain = crypto::XOR( encrypted,
-                                   Bytes( padded.cbegin() + ( i + 0 ) * openssl::blockSize,
-                                          padded.cbegin() + ( i + 1 ) * openssl::blockSize ) );
+                                   Bytes( padded.cbegin() + ( i + 0 ) * crypto::blockSize,
+                                          padded.cbegin() + ( i + 1 ) * crypto::blockSize ) );
         openssl::encrypt( plain.data(), plain.size(), key.data(), nullptr, encrypted.data() );
         result = result + encrypted;
     }
@@ -219,30 +141,30 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
 
 Bytes crypto::decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv ) {
 
-    if( key.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid key size " << key.size() << " != " << openssl::blockSize );
+    if( key.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid key size " << key.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    if( iv.size() != openssl::blockSize ) {
-        LOG( "Error: Invalid iv size " << iv.size() << " != " << openssl::blockSize );
+    if( iv.size() != crypto::blockSize ) {
+        LOG( "Error: Invalid iv size " << iv.size() << " != " << crypto::blockSize );
         return {};
     }
 
-    if( data.size() % openssl::blockSize != 0 ) {
-        LOG( "Error: Invalid data size " << data.size() << " % " << openssl::blockSize << " != 0" );
+    if( data.size() % crypto::blockSize != 0 ) {
+        LOG( "Error: Invalid data size " << data.size() << " % " << crypto::blockSize << " != 0" );
         return {};
     }
 
-    size_t steps = data.size() / openssl::blockSize;
+    size_t steps = data.size() / crypto::blockSize;
 
     Bytes newIV = iv;
-    Bytes decrypted( openssl::blockSize, 0 );
+    Bytes decrypted( crypto::blockSize, 0 );
     Bytes result;
 
     for( size_t i = 0; i < steps; ++i ) {
-        Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * openssl::blockSize,
-                                 data.cbegin() + ( i + 1 ) * openssl::blockSize );
+        Bytes encrypted = Bytes( data.cbegin() + ( i + 0 ) * crypto::blockSize,
+                                 data.cbegin() + ( i + 1 ) * crypto::blockSize );
         openssl::decrypt( encrypted.data(), encrypted.size(), key.data(), nullptr, decrypted.data() );
         Bytes plain = crypto::XOR( newIV, decrypted );
         result.insert( result.end(), plain.cbegin(), plain.cend() );
@@ -269,7 +191,7 @@ Bytes crypto::randBytes( const size_t& size ) {
 }
 
 Bytes crypto::genKey() {
-    return randBytes( openssl::blockSize );
+    return randBytes( crypto::blockSize );
 }
 
 size_t crypto::randSize( const size_t& from, const size_t& to ) {
