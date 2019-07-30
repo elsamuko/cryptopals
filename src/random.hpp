@@ -1,9 +1,11 @@
 #pragma once
 
-#ifndef _WIN32
-#include <sys/random.h>
-#else
+#ifdef _WIN32
 #include <Windows.h>
+#elif __APPLE__
+#include <Security/Security.h>
+#elif __linux__
+#include <sys/random.h>
 #endif
 
 #include "types.hpp"
@@ -16,7 +18,7 @@ Bytes get( const size_t& size ) {
     Bytes buffer( size );
 
 #if __APPLE__
-    bool rv = 0 == getentropy( buffer.data(), buffer.size() );
+    bool rv = 0 == SecRandomCopyBytes( kSecRandomDefault, buffer.size(), buffer.data() );
 #elif _WIN32
     bool rv = 0 == ::BCryptGenRandom( nullptr, buffer.data(), buffer.size(), BCRYPT_USE_SYSTEM_PREFERRED_RNG );
 #elif __linux__
