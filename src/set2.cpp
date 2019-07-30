@@ -308,3 +308,10 @@ end:
                            "Did you stop? No, I just drove by\n";
     CHECK_EQ( secret, expected );
 }
+
+void challenge2_15() {
+    CHECK_EQ( "ICE ICE BABY", crypto::unpadPKCS7( std::string( "ICE ICE BABY\x01" ) ) );
+    CHECK_EQ( "ICE ICE BABY", crypto::unpadPKCS7( std::string( "ICE ICE BABY\x04\x04\x04\x04" ) ) );
+    CHECK_THROW( crypto::unpadPKCS7( std::string( "ICE ICE BABY\x05\x05\x05\x05" ) ) );
+    CHECK_THROW( crypto::unpadPKCS7( std::string( "ICE ICE BABY\x01\x02\x03\x04" ) ) );
+}

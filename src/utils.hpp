@@ -11,6 +11,9 @@
 #define CHECK_EQ( A, B ) if( (A) != (B) ) { LOG( "[FAILURE] : "#A" == "#B", " << A << " != " << B ); } \
                                      else { LOG_DEBUG( "[SUCCESS] : "#A" == "#B ); }
 
+#define CHECK_THROW( A ) try{ A; LOG( "[FAILURE] : Throws not: "#A ); } \
+                        catch(...) { LOG_DEBUG( "[SUCCESS] : Throws: "#A ); }
+
 namespace utils {
 
 //! split \p mono into \p parts parts

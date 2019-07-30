@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <random>
+#include <stdexcept>
 
 #include "converter.hpp"
 #include "random.hpp"
@@ -69,9 +70,18 @@ template<class Container>
 Container crypto::unpadPKCS7( const Container& input ) {
     if( input.empty() ) { return {}; }
 
+    size_t size = input.size();
     size_t padSize = static_cast<size_t>( input.back() );
 
     if( input.size() < padSize ) { return {}; }
+
+    // validate PKCS7 format
+    for( size_t i = 1; i <= padSize; ++i ) {
+
+        if( input[size - i] != padSize ) {
+            throw std::invalid_argument( "Invalid PKCS7" );
+        }
+    }
 
     return Container( input.cbegin(), input.cend() - static_cast<typename Container::difference_type>( padSize ) );
 }
