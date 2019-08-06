@@ -181,8 +181,9 @@ float utils::shannonEntropy( const Bytes& data ) {
     return entropy;
 }
 
+template<char separator>
+std::map<std::string, std::string> tokenizeAndSplit( const std::string& params ) {
 
-std::map<std::string, std::string> utils::parseGETParams( const std::string& params ) {
     std::map<std::string, std::string> parsed;
     std::vector<std::string> items;
 
@@ -191,8 +192,8 @@ std::map<std::string, std::string> utils::parseGETParams( const std::string& par
     size_t from = 0;
     size_t to = 0;
 
-    // tokenize by '&'
-    while( ( to = params.find( '&', from ) ) != std::string::npos ) {
+    // tokenize by separator
+    while( ( to = params.find( separator, from ) ) != std::string::npos ) {
         if( ( start + from ) != ( start + to ) ) {
             items.emplace_back( start + from, start + to );
         }
@@ -219,6 +220,10 @@ std::map<std::string, std::string> utils::parseGETParams( const std::string& par
     }
 
     return parsed;
+}
+
+std::map<std::string, std::string> utils::parseGETParams( const std::string& params ) {
+    return tokenizeAndSplit<'&'>( params );
 }
 
 template<class A, class B>
@@ -248,4 +253,23 @@ std::string utils::profileFor( const std::string& mail ) {
     std::stringstream request;
     request << "email=" << copy << "&uid=10&role=user";
     return request.str();
+}
+
+std::string utils::generateGETRequest( const std::string& userdata ) {
+    std::string copy = userdata;
+
+    // remove ';' and '='
+    // https://en.wikipedia.org/wiki/Erase%E2%80%93remove_idiom
+    copy.erase( std::remove( copy.begin(), copy.end(), ';' ), copy.end() );
+    copy.erase( std::remove( copy.begin(), copy.end(), '=' ), copy.end() );
+
+    // assemble request
+    std::stringstream request;
+    request << "comment1=cooking%20MCs;userdata=" << copy << ";comment2=%20like%20a%20pound%20of%20bacon";
+    return request.str();
+}
+
+bool utils::isAdmin( const std::string& params ) {
+    std::map<std::string, std::string> pairs = tokenizeAndSplit<';'>( params );
+    return pairs["admin"] == "true";
 }
