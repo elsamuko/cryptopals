@@ -315,3 +315,37 @@ void challenge2_15() {
     CHECK_THROW( crypto::unpadPKCS7( std::string( "ICE ICE BABY\x05\x05\x05\x05" ) ) );
     CHECK_THROW( crypto::unpadPKCS7( std::string( "ICE ICE BABY\x01\x02\x03\x04" ) ) );
 }
+
+void challenge2_16() {
+
+    std::string userdata = "HASE";
+    std::string request = utils::generateGETRequest( userdata );
+    CHECK_EQ( request, "comment1=cooking%20MCs;userdata=HASE;comment2=%20like%20a%20pound%20of%20bacon" );
+
+    // encrypt/decrypt with secret key
+    struct {
+        // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+        Bytes key = { 0x0c, 0xc8, 0xdf, 0x18, 0x31, 0x4d, 0x46, 0x03, 0x8d, 0x53, 0x65, 0x17, 0xa7, 0x56, 0x03, 0x2d };
+        Bytes iv  = { 0x2b, 0x02, 0x6a, 0xb4, 0x30, 0x94, 0x64, 0xcb, 0x4d, 0x29, 0x62, 0x6c, 0xaa, 0xc7, 0x59, 0xac };
+
+        Bytes pack( const std::string& userdata ) {
+            std::string request = utils::generateGETRequest( userdata );
+            Bytes data( request.cbegin(), request.cend() );
+            Bytes encrypted = crypto::encryptAES128CBC( data, key, iv );
+            return encrypted;
+        }
+
+        bool isAdmin( const Bytes& encrypted ) {
+            Bytes decrypted = crypto::decryptAES128CBC( encrypted, key, iv );
+            std::string request( decrypted.cbegin(), decrypted.cend() );
+            bool admin = utils::isAdmin( request );
+            return admin;
+        }
+    } Packer;
+
+    Bytes encrypted = Packer.pack( userdata );
+
+    // ...
+
+    CHECK( Packer.isAdmin( encrypted ) );
+}
