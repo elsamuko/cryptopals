@@ -96,7 +96,7 @@ Bytes crypto::encryptAES128ECB( const Bytes& text, const Bytes& key ) {
         return {};
     }
 
-    Bytes padded = padPKCS7( text, crypto::blockSize );
+    Bytes padded = padPKCS7( text );
     Bytes cipher( padded.size(), 0 );
 
     int len = aes::encryptAES128ECB( padded.data(), cipher.data(), padded.size(), key.data() );
@@ -139,7 +139,7 @@ Bytes crypto::encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes
         return {};
     }
 
-    Bytes padded = crypto::padPKCS7( text, crypto::blockSize );
+    Bytes padded = crypto::padPKCS7( text );
     size_t steps = padded.size() / crypto::blockSize;
 
     Bytes encrypted = iv;
