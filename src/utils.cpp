@@ -273,3 +273,14 @@ bool utils::isAdmin( const std::string& params ) {
     std::map<std::string, std::string> pairs = tokenizeAndSplit<';'>( params );
     return pairs["admin"] == "true";
 }
+
+void utils::logBlock( const std::string& in ) {
+    size_t size = in.size();
+    std::stringstream out;
+
+    for( size_t i = 0; i < size; i += crypto::blockSize ) {
+        out << in.substr( i, crypto::blockSize ) << std::endl;
+    }
+
+    LOG( out.str() );
+}

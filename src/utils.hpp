@@ -56,6 +56,9 @@ std::string profileFor( const std::string& mail );
 //! \returns "comment1=cooking%20MCs;userdata=HASE;comment2=%20like%20a%20pound%20of%20bacon" for input "HASE"
 std::string generateGETRequest( const std::string& userdata );
 
+//! splits string into 16 bytes and logs them
+void logBlock( const std::string& in );
+
 }
 
 Bytes operator+( const Bytes& first, const Bytes& second );
