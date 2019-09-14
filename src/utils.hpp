@@ -47,7 +47,7 @@ float shannonEntropy( const Bytes& data );
 //! \returns map with parsed params, e.g. { foo: 'bar', baz: 'qux', zap: 'zazzle' }
 std::map<std::string, std::string> parseGETParams( const std::string& params );
 
-//! returns, if string contains semicolon separated pair admin=true
+//! \returns true, if string contains semicolon separated pair admin=true
 bool isAdmin( const std::string& params );
 
 //! \returns "email=foo@bar.com&uid=10&role=user" for input "foo@bar.com"
