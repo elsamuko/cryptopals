@@ -1,5 +1,6 @@
 #include "set1.hpp"
 #include "set2.hpp"
+#include "set3.hpp"
 
 #include <vector>
 #include <functional>
@@ -31,6 +32,8 @@ int main( int argc, char* argv[] ) {
         { "2.15", challenge2_15 },
         { "2.16", challenge2_16 },
 
+        // https://cryptopals.com/sets/3
+        { "3.17", challenge3_17 },
     };
 
     // run one challenge
