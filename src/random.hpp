@@ -36,3 +36,14 @@ inline Bytes get( const size_t& size ) {
 }
 
 }
+
+namespace randomnumber {
+
+inline size_t get( size_t max ) {
+    assert( max < RAND_MAX );
+    srand( ( int )time( 0 ) );
+    int r = ( rand() % max );
+    return r;
+}
+
+}
