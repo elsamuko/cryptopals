@@ -7,13 +7,15 @@
 #elif __linux__
 #include <sys/random.h>
 #endif
+#include <cstdlib>
+#include <ctime>
 
 #include "types.hpp"
 #include "log.hpp"
 
 namespace randombuffer {
 
-Bytes get( const size_t& size ) {
+inline Bytes get( const size_t& size ) {
     // uninitialized buffer
     Bytes buffer( size );
 
