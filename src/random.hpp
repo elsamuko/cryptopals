@@ -9,6 +9,7 @@
 #endif
 #include <cstdlib>
 #include <ctime>
+#include <random>
 
 #include "types.hpp"
 #include "log.hpp"
@@ -39,11 +40,11 @@ inline Bytes get( const size_t& size ) {
 
 namespace randomnumber {
 
-inline size_t get( size_t max ) {
-    assert( max < RAND_MAX );
-    srand( ( int )time( 0 ) );
-    int r = ( rand() % max );
-    return r;
+inline int get( const int max ) {
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<std::mt19937::result_type> d( 0, max - 1 );
+    return d( gen );
 }
 
 }
