@@ -77,6 +77,10 @@ Container crypto::unpadPKCS7( const Container& input ) {
         throw std::invalid_argument( "PKCS7: Padding too big" );
     }
 
+    if( padSize == 0 ) {
+        throw std::invalid_argument( "PKCS7: Padding cannot be zero" );
+    }
+
     // validate PKCS7 format
     for( size_t i = 1; i <= padSize; ++i ) {
 
