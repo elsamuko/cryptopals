@@ -122,7 +122,18 @@ template size_t utils::hammingDistance<Bytes>( const Bytes& first, const Bytes& 
 template size_t utils::hammingDistance<std::string>( const std::string& first, const std::string& second );
 
 std::ostream& operator<<( std::ostream& os, const Bytes& bytes ) {
-    os << converter::binaryToHex( bytes );
+    int count = 0;
+
+    for( const uint8_t& byte : bytes ) {
+        os.width( 3 );
+        os << ( size_t )byte;
+        os << "|";
+
+        if( ++count % crypto::blockSize == 0 ) {
+            os << "\n";
+        }
+    }
+
     return os;
 }
 
