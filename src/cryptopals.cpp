@@ -34,6 +34,7 @@ int main( int argc, char* argv[] ) {
 
         // https://cryptopals.com/sets/3
         { "3.17", challenge3_17 },
+        { "3.18", challenge3_18 },
     };
 
     // run one challenge

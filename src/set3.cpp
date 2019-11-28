@@ -178,3 +178,18 @@ void challenge3_17() {
     LOG( std::string( binary.cbegin(), binary.cend() ) );
     CHECK_EQ( decrypted, crypto.decrypted );
 }
+
+
+
+void challenge3_18() {
+    Bytes encrypted = converter::base64ToBinary( "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==" );
+    std::string key = "YELLOW SUBMARINE";
+    Bytes vkey( key.cbegin(), key.cend() );
+
+    Bytes vdecrypted = crypto::decryptAES128CTR( encrypted, vkey, 0 );
+    std::string decrypted( vdecrypted.cbegin(), vdecrypted.cend() );
+    CHECK_EQ( decrypted, "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby " );
+
+    Bytes reencrypted = crypto::encryptAES128CTR( vdecrypted, vkey, 0 );
+    CHECK_EQ( reencrypted, encrypted );
+}
