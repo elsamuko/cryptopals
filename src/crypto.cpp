@@ -3,6 +3,7 @@
 #include <memory>
 #include <random>
 #include <stdexcept>
+#include <cstring>
 
 #include "converter.hpp"
 #include "random.hpp"
@@ -281,4 +282,37 @@ Bytes crypto::encryptECBWithRandomPrefixAndSecretSuffix( const Bytes& data ) {
     Bytes all = prefix + data + suffix;
 
     return encryptAES128ECB( all, key );
+}
+
+Bytes helperAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce ) {
+    Bytes padded = crypto::padPKCS7( text );
+    Bytes encrypted;
+    encrypted.reserve( padded.size() );
+
+    uint64_t counter = 0;
+    Bytes nonce_counter( crypto::blockSize );
+    static_assert( crypto::blockSize == 2 * sizeof( nonce ), "nonce does not fit first half of AES block!" );
+    static_assert( crypto::blockSize == 2 * sizeof( counter ), "counter does not fit second half of AES block!" );
+    std::memcpy( &nonce_counter[0], &nonce, sizeof( nonce ) );
+
+    for( size_t i = 0; i < padded.size(); i += crypto::blockSize ) {
+        Bytes sub( padded.cbegin() + i, padded.cbegin() + i + crypto::blockSize );
+        std::memcpy( &nonce_counter[crypto::blockSize / 2], &counter, sizeof( counter ) );
+        Bytes xorStream = crypto::encryptAES128ECB( nonce_counter, key );
+        Bytes scrambled = crypto::XOR( sub, xorStream );
+        encrypted.insert( encrypted.cend(), scrambled.cbegin(), scrambled.cend() );
+        counter++;
+    }
+
+    encrypted.resize( text.size() );
+
+    return encrypted;
+}
+
+Bytes crypto::encryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce ) {
+    return helperAES128CTR( text, key, nonce );
+}
+
+Bytes crypto::decryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce ) {
+    return helperAES128CTR( text, key, nonce );
 }
