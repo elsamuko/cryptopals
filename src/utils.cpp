@@ -8,6 +8,7 @@
 
 #include "converter.hpp"
 #include "crypto.hpp"
+#include "english_words.hpp"
 #include "log.hpp"
 
 Bytes utils::fromBase64File( const std::string& filename ) {
@@ -24,6 +25,20 @@ Bytes utils::fromBase64File( const std::string& filename ) {
 
     Bytes bytes = converter::base64ToBinary( ss.str( ) );
     return bytes;
+}
+
+bool isPunctuation( const int c ) {
+    switch( c ) {
+        case ':':
+        case ';':
+        case '.':
+        case ',':
+        case '?':
+        case '!':
+            return true;
+    }
+
+    return false;
 }
 
 float utils::isEnglishText( const Bytes& text ) {
@@ -88,6 +103,66 @@ float utils::isEnglishText( const Bytes& text ) {
 
     return props - penalty;
 }
+
+std::vector<std::string> tokenize( const std::string& sentence ) {
+    std::string current;
+    std::vector<std::string> tokens;
+
+    for( const char c : sentence ) {
+        if( std::isalpha( c ) ) {
+            current.push_back( c );
+        } else {
+            if( !current.empty() ) {
+                tokens.push_back( current );
+                current.clear();
+            }
+        }
+    }
+
+    if( !current.empty() ) {
+        tokens.push_back( current );
+        current.clear();
+    }
+
+    return tokens;
+}
+
+float utils::areEnglishSentences( const std::vector<Bytes>& sentences ) {
+
+    float points = 0.f;
+    std::map<std::string, float> freqs;
+    float words = 0.f;
+
+    for( const Bytes& sentence : sentences ) {
+        // reward, if first letter is uppercase
+        if( !sentence.empty() ) {
+            if( std::isupper( sentence.front() ) ) { points++; }
+
+            if( isPunctuation( sentence.back() ) ) { points++; }
+        }
+
+        std::vector<std::string> tokens = tokenize( str( sentence ) );
+
+        for( std::string token : tokens ) {
+            std::transform( token.begin(), token.end(), token.begin(), []( unsigned char c ) { return std::tolower( c ); } );
+            freqs[token]++;
+            words++;
+        }
+    }
+
+    for( const auto& freq : freqs ) {
+        const std::string& key = freq.first;
+
+        auto it = english::words.find( key );
+
+        if( it != english::words.end() ) {
+            points += it->second * freq.second;
+        } else {
+            points--;
+        }
+    }
+
+    return points;
 }
 
 std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
@@ -316,3 +391,4 @@ void utils::logBlock( const std::string& in ) {
 
     LOG( out.str() );
 }
+

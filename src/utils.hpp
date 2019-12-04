@@ -23,6 +23,10 @@ std::vector<Bytes> disperse( const Bytes& mono, const size_t& parts );
 //! higher is better
 float isEnglishText( const Bytes& text );
 
+//! analyze, if \p text are english sentences
+//! higher is better
+float areEnglishSentences( const std::vector<Bytes>& sentences );
+
 //! reads \p filename with newline separated hex lines
 std::vector<Bytes> fromHexFile( const std::string& filename );
 
