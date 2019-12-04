@@ -44,7 +44,7 @@ float utils::isEnglishText( const Bytes& text ) {
             if( std::isupper( c ) ) {
                 freqs[std::tolower( c )] += 1;
             } else {
-                freqs[std::tolower( c )] += 4;
+                freqs[std::tolower( c )] += 2;
             }
         }
 
@@ -54,19 +54,40 @@ float utils::isEnglishText( const Bytes& text ) {
     }
 
     // https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language
-    float probAP = 0.03f * freqs['\''];
-    float probCR = 0.03f * freqs['\r'];
-    float probLF = 0.03f * freqs['\n'];
-    float prob_  = 0.19181f * freqs[' '];
-    float probE  = 0.12702f * freqs['e'];
-    float probT  = 0.09056f * freqs['t'];
-    float probA  = 0.08167f * freqs['a'];
-    float probO  = 0.07507f * freqs['o'];
-    float probI  = 0.06966f * freqs['i'];
-    float probN  = 0.06749f * freqs['n'];
-    float probS  = 0.06327f * freqs['s'];
+    float props = 0.f;
+    props += 0.03f * freqs['\''];
+    props += 0.03f * freqs['\r'];
+    props += 0.03f * freqs['\n'];
+    props += 0.19181f * freqs[' '];
+    props += 0.12702f * freqs['e'];
+    props += 0.09056f * freqs['t'];
+    props += 0.08167f * freqs['a'];
+    props += 0.07507f * freqs['o'];
+    props += 0.06966f * freqs['i'];
+    props += 0.06749f * freqs['n'];
+    props += 0.06327f * freqs['s'];
+    props += 0.06094f * freqs['h'];
+    props += 0.05987f * freqs['r'];
+    props += 0.04253f * freqs['d'];
+    props += 0.04025f * freqs['l'];
+    props += 0.02782f * freqs['c'];
+    props += 0.02758f * freqs['u'];
+    props += 0.02406f * freqs['m'];
+    props += 0.02360f * freqs['w'];
+    props += 0.02228f * freqs['f'];
+    props += 0.02015f * freqs['g'];
+    props += 0.01974f * freqs['y'];
+    props += 0.01929f * freqs['p'];
+    props += 0.01492f * freqs['b'];
+    props += 0.00978f * freqs['v'];
+    props += 0.00772f * freqs['k'];
+    props += 0.00153f * freqs['j'];
+    props += 0.00150f * freqs['x'];
+    props += 0.00095f * freqs['q'];
+    props += 0.00074f * freqs['z'];
 
-    return probAP + probCR + probLF + prob_ + probE + probT + probA + probO + probI + probN + probS - penalty;
+    return props - penalty;
+}
 }
 
 std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
