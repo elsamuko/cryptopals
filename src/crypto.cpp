@@ -48,6 +48,16 @@ Bytes crypto::XOR( const Bytes& data, const uint8_t& key ) {
     return rv;
 }
 
+std::vector<Bytes> crypto::XOR( const std::vector<Bytes>& data, const Bytes& key ) {
+    std::vector<Bytes> rv;
+    rv.reserve( data.size() );
+
+    for( const Bytes& one : data ) {
+        rv.push_back( XOR( one, key ) );
+    }
+
+    return rv;
+}
 
 template<class Container>
 Container crypto::padPKCS7( const Container& input, const size_t blockSize ) {

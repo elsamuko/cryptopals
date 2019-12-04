@@ -8,6 +8,7 @@ const size_t blockSize = 16;
 std::string XOR( const std::string& data, const std::string& key );
 Bytes XOR( const Bytes& data, const Bytes& key );
 Bytes XOR( const Bytes& data, const uint8_t& key );
+std::vector<Bytes> XOR( const std::vector<Bytes>& data, const Bytes& key );
 
 Bytes encryptAES128ECB( const Bytes& text, const Bytes& key );
 Bytes decryptAES128ECB( const Bytes& data, const Bytes& key );
