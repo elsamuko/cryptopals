@@ -17,32 +17,32 @@ namespace aes = openssl;
 namespace aes = aesni;
 #endif
 
-Bytes crypto::XOR( const Bytes& first, const Bytes& second ) {
-    size_t size1 = first.size();
-    size_t size2 = second.size();
+Bytes crypto::XOR( const Bytes& data, const Bytes& key ) {
+    size_t size1 = data.size();
+    size_t size2 = key.size();
     Bytes rv( size1, 0 );
 
     for( size_t i = 0; i < size1; ++i ) {
-        rv[i] = first[i] ^ second[i % size2];
+        rv[i] = data[i] ^ key[i % size2];
     }
 
     return rv;
 }
 
-std::string crypto::XOR( const std::string& first, const std::string& second ) {
-    Bytes vfirst = converter::hexToBinary( first );
-    Bytes vsecond = converter::hexToBinary( second );
+std::string crypto::XOR( const std::string& data, const std::string& key ) {
+    Bytes vfirst = converter::hexToBinary( data );
+    Bytes vsecond = converter::hexToBinary( key );
     Bytes vres = XOR( vfirst, vsecond );
     std::string rv = converter::binaryToHex( vres );
     return rv;
 }
 
-Bytes crypto::XOR( const Bytes& first, const uint8_t& key ) {
-    size_t size = first.size();
+Bytes crypto::XOR( const Bytes& data, const uint8_t& key ) {
+    size_t size = data.size();
     Bytes rv( size, 0 );
 
     for( size_t i = 0; i < size; ++i ) {
-        rv[i] = first[i] ^ key;
+        rv[i] = data[i] ^ key;
     }
 
     return rv;

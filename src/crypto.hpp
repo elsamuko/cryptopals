@@ -5,9 +5,9 @@
 namespace crypto {
 const size_t blockSize = 16;
 
-std::string XOR( const std::string& first, const std::string& second );
-Bytes XOR( const Bytes& first, const Bytes& second );
-Bytes XOR( const Bytes& first, const uint8_t& key );
+std::string XOR( const std::string& data, const std::string& key );
+Bytes XOR( const Bytes& data, const Bytes& key );
+Bytes XOR( const Bytes& data, const uint8_t& key );
 
 Bytes encryptAES128ECB( const Bytes& text, const Bytes& key );
 Bytes decryptAES128ECB( const Bytes& data, const Bytes& key );
