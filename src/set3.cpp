@@ -193,3 +193,176 @@ void challenge3_18() {
     Bytes reencrypted = crypto::encryptAES128CTR( vdecrypted, vkey, 0 );
     CHECK_EQ( reencrypted, encrypted );
 }
+
+std::tuple<std::vector<Bytes>, std::vector<Bytes>> encryptedStrings() {
+    const std::vector<std::string> strings = {
+        "SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
+        "Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
+        "RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
+        "RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
+        "SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
+        "T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+        "T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
+        "UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+        "QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
+        "T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
+        "VG8gcGxlYXNlIGEgY29tcGFuaW9u",
+        "QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
+        "QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
+        "QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
+        "QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
+        "QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+        "VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
+        "SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==",
+        "SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==",
+        "VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
+        "V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
+        "V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
+        "U2hlIHJvZGUgdG8gaGFycmllcnM/",
+        "VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
+        "QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
+        "VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
+        "V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
+        "SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
+        "U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
+        "U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
+        "VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
+        "QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
+        "SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
+        "VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
+        "WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
+        "SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
+        "SW4gdGhlIGNhc3VhbCBjb21lZHk7",
+        "SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=",
+        "VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
+        "QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+    };
+
+    // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+    Bytes key = { 0x60, 0x6e, 0xeb, 0x27, 0x29, 0xb0, 0x67, 0xdc, 0xad, 0x0e, 0xa5, 0xb3, 0x87, 0xb1, 0x35, 0x52 };
+
+    std::vector<Bytes> encrypted;
+    std::vector<Bytes> clear;
+    encrypted.reserve( strings.size() );
+    clear.reserve( strings.size() );
+
+    for( const std::string& base64 : strings ) {
+        Bytes text = converter::base64ToBinary( base64 );
+        clear.push_back( text );
+
+        Bytes ctr = crypto::encryptAES128CTR( text, key, 0 );
+        encrypted.push_back( ctr );
+    }
+
+    return std::make_tuple( clear, encrypted );
+}
+
+size_t maxLength( const std::vector<Bytes>& data ) {
+    size_t vmax = 0;
+
+    for( const Bytes& bytes : data ) {
+        vmax = std::max( vmax, bytes.size() );
+    }
+
+    return vmax;
+}
+
+std::array<Bytes, 6> guessByLetterFrequency( const std::vector<Bytes>& encrypted ) {
+
+    size_t vmax = maxLength( encrypted );
+
+    std::array<Bytes, 6> crypt;
+
+    for( Bytes& b : crypt ) {
+        b.reserve( vmax );
+    }
+
+    size_t pos = 0;
+
+    while( pos < vmax ) {
+
+        Bytes bytes;
+        bytes.reserve( encrypted.size() );
+
+        // get pos byte of every string
+        for( const Bytes& one : encrypted ) {
+            if( one.size() > pos ) {
+                bytes.push_back( one[pos] );
+            }
+        }
+
+        float bestGuess = -1000.f;
+        uint8_t guessedByte = 0;
+
+        uint8_t key = 0;
+        std::vector<std::pair<float, Byte>> guesses;
+        guesses.reserve( 256 );
+
+        do {
+            Bytes text = crypto::XOR( bytes, key );
+
+            float v = utils::isEnglishText( text );
+            guesses.emplace_back( v, key );
+
+        } while( ++key );
+
+        std::sort( guesses.begin(), guesses.end() );
+
+        for( size_t i = 0; i < crypt.size(); ++i ) {
+            crypt[i].push_back( guesses[255 - i].second );
+        }
+
+        ++pos;
+    }
+
+    return crypt;
+}
+
+Bytes guessByWordFrequency( const std::vector<Bytes>& encrypted, const std::array<Bytes, 6>& crypts ) {
+    Bytes bestCrypt = crypts[0];
+    float bestGuess = -1000.f;
+
+    for( size_t pos = 0; pos < crypts[0].size(); ++pos ) {
+
+        size_t bestPos = 0;
+
+        for( size_t gPos = 0; gPos < crypts.size(); ++gPos ) {
+
+            bestCrypt[pos] = crypts[gPos][pos];
+            std::vector<Bytes> text = crypto::XOR( encrypted, bestCrypt );
+            float v = utils::areEnglishSentences( text );
+
+            if( v > bestGuess ) {
+                bestPos = gPos;
+                bestGuess = v;
+            }
+        }
+
+        bestCrypt[pos] = crypts[bestPos][pos];
+    }
+
+    return bestCrypt;
+}
+
+void challenge3_19() {
+    auto[ clears, encrypted ] = encryptedStrings();
+
+    std::array<Bytes, 6> crypt = guessByLetterFrequency( encrypted );
+    Bytes bestCrypt = guessByWordFrequency( encrypted, crypt );
+
+    for( size_t i = 0; i < clears.size(); ++i ) {
+        std::string decrypted = str( crypto::XOR( encrypted[i], bestCrypt ) );
+        std::string clear = str( clears[i] );
+
+        // check for equality of first 30 chars, further guesses are unreliable
+        CHECK_EQ( decrypted.substr( 0, 30 ), clear.substr( 0, 30 ) );
+
+        // display the ones, we couldn't fully guess
+        if( decrypted != clear ) {
+            LOG_DEBUG( clear );
+            LOG_DEBUG( decrypted );
+        }
+    }
+}
+
+
