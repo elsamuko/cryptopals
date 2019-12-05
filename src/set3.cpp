@@ -194,49 +194,8 @@ void challenge3_18() {
     CHECK_EQ( reencrypted, encrypted );
 }
 
-std::tuple<std::vector<Bytes>, std::vector<Bytes>> encryptedStrings() {
-    const std::vector<std::string> strings = {
-        "SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
-        "Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
-        "RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
-        "RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
-        "SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
-        "T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-        "T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
-        "UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-        "QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
-        "T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
-        "VG8gcGxlYXNlIGEgY29tcGFuaW9u",
-        "QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
-        "QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
-        "QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
-        "QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
-        "QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
-        "VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
-        "SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==",
-        "SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==",
-        "VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
-        "V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
-        "V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
-        "U2hlIHJvZGUgdG8gaGFycmllcnM/",
-        "VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
-        "QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
-        "VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
-        "V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
-        "SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
-        "U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
-        "U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
-        "VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
-        "QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
-        "SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
-        "VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
-        "WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
-        "SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
-        "SW4gdGhlIGNhc3VhbCBjb21lZHk7",
-        "SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=",
-        "VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
-        "QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
-    };
+std::tuple<std::vector<Bytes>, std::vector<Bytes>> encryptedStrings( const std::string& filename ) {
+    const std::vector<std::string> strings  = utils::fromFile( filename );
 
     // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
     Bytes key = { 0x60, 0x6e, 0xeb, 0x27, 0x29, 0xb0, 0x67, 0xdc, 0xad, 0x0e, 0xa5, 0xb3, 0x87, 0xb1, 0x35, 0x52 };
@@ -267,11 +226,13 @@ size_t maxLength( const std::vector<Bytes>& data ) {
     return vmax;
 }
 
-std::array<Bytes, 6> guessByLetterFrequency( const std::vector<Bytes>& encrypted ) {
+using FirstGuesses = std::array<Bytes, 6>;
+
+FirstGuesses guessByLetterFrequency( const std::vector<Bytes>& encrypted ) {
 
     size_t vmax = maxLength( encrypted );
 
-    std::array<Bytes, 6> crypt;
+    FirstGuesses crypt;
 
     for( Bytes& b : crypt ) {
         b.reserve( vmax );
@@ -290,9 +251,6 @@ std::array<Bytes, 6> guessByLetterFrequency( const std::vector<Bytes>& encrypted
                 bytes.push_back( one[pos] );
             }
         }
-
-        float bestGuess = -1000.f;
-        uint8_t guessedByte = 0;
 
         uint8_t key = 0;
         std::vector<std::pair<float, Byte>> guesses;
@@ -318,7 +276,7 @@ std::array<Bytes, 6> guessByLetterFrequency( const std::vector<Bytes>& encrypted
     return crypt;
 }
 
-Bytes guessByWordFrequency( const std::vector<Bytes>& encrypted, const std::array<Bytes, 6>& crypts ) {
+Bytes guessByWordFrequency( const std::vector<Bytes>& encrypted, const FirstGuesses& crypts ) {
     Bytes bestCrypt = crypts[0];
     float bestGuess = -1000.f;
 
@@ -345,9 +303,10 @@ Bytes guessByWordFrequency( const std::vector<Bytes>& encrypted, const std::arra
 }
 
 void challenge3_19() {
-    auto[ clears, encrypted ] = encryptedStrings();
+    auto[ clears, encrypted ] = encryptedStrings( "3_19.txt" );
+    CHECK( !encrypted.empty() );
 
-    std::array<Bytes, 6> crypt = guessByLetterFrequency( encrypted );
+    FirstGuesses crypt = guessByLetterFrequency( encrypted );
     Bytes bestCrypt = guessByWordFrequency( encrypted, crypt );
 
     for( size_t i = 0; i < clears.size(); ++i ) {
