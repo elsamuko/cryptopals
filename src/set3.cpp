@@ -324,4 +324,24 @@ void challenge3_19() {
     }
 }
 
+void challenge3_20() {
+    auto[ clears, encrypted ] = encryptedStrings( "3_20.txt" );
+    CHECK( !encrypted.empty() );
 
+    FirstGuesses crypt = guessByLetterFrequency( encrypted );
+    Bytes bestCrypt = guessByWordFrequency( encrypted, crypt );
+
+    for( size_t i = 0; i < clears.size(); ++i ) {
+        std::string decrypted = str( crypto::XOR( encrypted[i], bestCrypt ) );
+        std::string clear = str( clears[i] );
+
+        // check for equality of first 100 chars, further guesses are unreliable
+        CHECK_EQ( decrypted.substr( 0, 100 ), clear.substr( 0, 100 ) );
+
+        // display the ones, we couldn't fully guess
+        if( decrypted != clear ) {
+            LOG_DEBUG( clear );
+            LOG_DEBUG( decrypted );
+        }
+    }
+}
