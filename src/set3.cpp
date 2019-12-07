@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <bitset>
+#include <array>
 
 std::string selectRandom() {
     const std::vector<std::string> strings = {
