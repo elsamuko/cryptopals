@@ -42,9 +42,8 @@ namespace randomnumber {
 
 inline int get( const int max ) {
     std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_int_distribution<std::mt19937::result_type> d( 0, max - 1 );
-    return d( gen );
+    std::uniform_int_distribution<int> d( 0, max - 1 );
+    return d( rd );
 }
 
 }
