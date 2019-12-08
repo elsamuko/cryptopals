@@ -7,6 +7,7 @@
 #include <string>
 #include <bitset>
 #include <array>
+#include <ctime>
 
 std::string selectRandom() {
     const std::vector<std::string> strings = {
@@ -355,5 +356,38 @@ void challenge3_21() {
 
     for( size_t i = 0; i < 2000; ++i ) {
         CHECK_EQ( mersenne.get(), gen() );
+    }
+}
+
+void challenge3_22() {
+    {
+        uint32_t seed = 26210;
+        Mersenne mersenne( seed );
+        Mersenne mersenne2( seed );
+
+        for( size_t i = 0; i < 2000; ++i ) {
+            CHECK_EQ( mersenne.get(), mersenne2.get() );
+        }
+    }
+
+    {
+        // current time
+        uint32_t t = std::time( nullptr );
+
+        // wait between 40...1000 secs
+        // and initialize Mersenne with it
+        uint32_t t2 = t + 40 + randomnumber::get( 1000 - 40 );
+        Mersenne secret( t2 );
+        uint32_t first = secret.get();
+
+        // map first rng output to seed
+        std::map<uint32_t, uint32_t> lookup;
+
+        for( size_t i = 0; i < 1000; ++i ) {
+            Mersenne mersenne( t + i );
+            lookup.emplace( mersenne.get(), t + i );
+        }
+
+        CHECK_EQ( t2, lookup[first] );
     }
 }

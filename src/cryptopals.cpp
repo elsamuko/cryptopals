@@ -38,6 +38,7 @@ int main( int argc, char* argv[] ) {
         { "3.19", challenge3_19 },
         { "3.20", challenge3_20 },
         { "3.21", challenge3_21 },
+        { "3.22", challenge3_22 },
     };
 
     // run one challenge
