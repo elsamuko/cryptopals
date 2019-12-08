@@ -70,6 +70,12 @@ class Mersenne {
             seq.generate( init.begin(), init.end() );
             std::memcpy( state.data(), init.data(), size * sizeof( uint32_t ) );
         }
+        explicit Mersenne( const uint32_t& seed ) {
+            std::seed_seq seq{ seed };
+            Mersenne::Init init;
+            seq.generate( init.begin(), init.end() );
+            std::memcpy( state.data(), init.data(), size * sizeof( uint32_t ) );
+        }
 
         uint32_t get() {
             if( pos == size ) {
