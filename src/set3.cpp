@@ -346,3 +346,14 @@ void challenge3_20() {
         }
     }
 }
+
+void challenge3_21() {
+    uint32_t seed = 7373;
+    std::seed_seq seq{ seed };
+    std::mt19937 gen( seq );
+    Mersenne mersenne( seq );
+
+    for( size_t i = 0; i < 2000; ++i ) {
+        CHECK_EQ( mersenne.get(), gen() );
+    }
+}

@@ -11,3 +11,6 @@ void challenge3_19();
 
 // https://cryptopals.com/sets/3/challenges/20
 void challenge3_20();
+
+// https://cryptopals.com/sets/3/challenges/21
+void challenge3_21();
