@@ -42,9 +42,9 @@ inline Bytes get( const size_t& size ) {
 
 namespace randomnumber {
 
-inline int get( const int max ) {
+inline uint32_t get( const uint32_t max = -1 ) {
     std::random_device rd;
-    std::uniform_int_distribution<int> d( 0, max - 1 );
+    std::uniform_int_distribution<uint32_t> d( 0, max - 1 );
     return d( rd );
 }
 
