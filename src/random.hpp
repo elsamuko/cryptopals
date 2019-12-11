@@ -97,6 +97,50 @@ class Mersenne {
             return a;
         }
 
+        // unspread result to calc internal state
+        static uint32_t unscramble( uint32_t a ) {
+            // 1.
+            {
+                a ^= ( a >> 18 );
+            }
+
+            // 2.
+            {
+                a ^= ( ( a << 15 ) & 0xEFC60000 );
+            }
+
+            // 3.
+            {
+                uint32_t filter1 = 0b00000000000000000000000001111111;
+                uint32_t filter2 = 0b00000000000000000011111110000000;
+                uint32_t filter3 = 0b00000000000111111100000000000000;
+                uint32_t filter4 = 0b00001111111000000000000000000000;
+                uint32_t filter5 = 0b11110000000000000000000000000000;
+
+                uint32_t a1 = a & filter1;
+                uint32_t a2 = ( a ^ ( ( a1 << 7 ) & 0x9D2C5680 ) ) & filter2;
+                uint32_t a3 = ( a ^ ( ( a2 << 7 ) & 0x9D2C5680 ) ) & filter3;
+                uint32_t a4 = ( a ^ ( ( a3 << 7 ) & 0x9D2C5680 ) ) & filter4;
+                uint32_t a5 = ( a ^ ( ( a4 << 7 ) & 0x9D2C5680 ) ) & filter5;
+
+                a = a1 | a2 | a3 | a4 | a5;
+            }
+
+            // 4.
+            {
+                uint32_t filter1 = 0b11111111111000000000000000000000;
+                uint32_t filter2 = 0b00000000000111111111110000000000;
+                uint32_t filter3 = 0b00000000000000000000001111111111;
+
+                uint32_t a1 = a & filter1;
+                uint32_t a2 = ( ( a1 >> 11 ) ^ a ) & filter2;
+                uint32_t a3 = ( ( a2 >> 11 ) ^ a ) & filter3;
+
+                a = a1 | a2 | a3;
+            }
+
+            return a;
+        }
     private:
 
         // generate new state of 624 numbers
