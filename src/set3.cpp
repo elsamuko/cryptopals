@@ -391,3 +391,11 @@ void challenge3_22() {
         CHECK_EQ( t2, lookup[first] );
     }
 }
+
+void challenge3_23() {
+    uint32_t r = randomnumber::get();
+    uint32_t s = Mersenne::scramble( r );
+    uint32_t r2 = Mersenne::unscramble( s );
+    CHECK( r != s );
+    CHECK_EQ( r, r2 );
+}
