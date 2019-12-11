@@ -87,15 +87,17 @@ class Mersenne {
             pos++;
             return scramble( v );
         }
-    private:
+
         // spread result for equal bits distribution
-        uint32_t scramble( const uint32_t& in ) {
-            uint32_t x = in ^ ( in / twopow11 );
-            uint32_t y = x ^ ( ( x * twopow7 ) & 0x9D2C5680 );
-            uint32_t z = y ^ ( ( y * twopow15 ) & 0xEFC60000 );
-            uint32_t r = z ^ ( z / twopow18 );
-            return r;
+        static uint32_t scramble( uint32_t a ) {
+            a ^= ( a >> 11 );
+            a ^= ( ( a << 7 ) & 0x9D2C5680 );
+            a ^= ( ( a << 15 ) & 0xEFC60000 );
+            a ^= ( a >> 18 );
+            return a;
         }
+
+    private:
 
         // generate new state of 624 numbers
         void shuffle() {
