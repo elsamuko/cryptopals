@@ -123,7 +123,7 @@ class Mersenne {
                 uint32_t a4 = ( a ^ ( ( a3 << 7 ) & 0x9D2C5680 ) ) & filter4;
                 uint32_t a5 = ( a ^ ( ( a4 << 7 ) & 0x9D2C5680 ) ) & filter5;
 
-                a = a1 | a2 | a3 | a4 | a5;
+                a = a5 | a4 | a3 | a2 | a1;
             }
 
             // 4.
