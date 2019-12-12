@@ -3,6 +3,7 @@ LIBS += Shlwapi.lib
 
 # disable warnings about POSIX API calls
 DEFINES += _CRT_SECURE_NO_WARNINGS
+DEFINES += NOMINMAX # for std::min, std::max
 
 # set 'd'
 CONFIG(debug, debug|release) {
