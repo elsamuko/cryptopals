@@ -398,4 +398,30 @@ void challenge3_23() {
     uint32_t r2 = Mersenne::unscramble( s );
     CHECK( r != s );
     CHECK_EQ( r, r2 );
+
+    Mersenne original( 18748 );
+
+    // drop between 100..200 first outputs
+    uint32_t drops = randomnumber::get( 100 ) + 100;
+
+    for( size_t i = 0; i < drops; i++ ) {
+        original.get();
+    }
+
+    // feed copy with 624 random numbers to copy internal state
+    Mersenne::Init init;
+
+    for( auto& num : init ) {
+        num = Mersenne::unscramble( original.get() );
+    }
+
+    Mersenne copy( init );
+
+    // compare with original
+    for( size_t i = 0; i < 100; ++i ) {
+        uint32_t a = original.get();
+        uint32_t b = copy.get();
+        CHECK_EQ( a, b );
+    }
+
 }
