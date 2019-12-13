@@ -19,6 +19,9 @@ Bytes decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv );
 Bytes encryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce );
 Bytes decryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce );
 
+Bytes encryptMersenneCTR( const Bytes& text, const uint16_t& key );
+Bytes decryptMersenneCTR( const Bytes& text, const uint16_t& key );
+
 //! pad \p input in PKCS#7 to \p size bytes
 template <class Container>
 Container padPKCS7( const Container& input, const size_t blockSize = crypto::blockSize );

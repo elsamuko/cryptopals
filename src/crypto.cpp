@@ -326,3 +326,33 @@ Bytes crypto::encryptAES128CTR( const Bytes& text, const Bytes& key, const uint6
 Bytes crypto::decryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce ) {
     return helperAES128CTR( text, key, nonce );
 }
+
+Bytes helperMersenneCTR( const Bytes& text, const uint16_t& key ) {
+    const size_t blockSize = sizeof( uint32_t );
+    Bytes padded = crypto::padPKCS7( text, blockSize );
+    Bytes encrypted;
+    encrypted.reserve( padded.size() );
+
+    Mersenne mersenne( key );
+
+    for( size_t i = 0; i < padded.size(); i += blockSize ) {
+        Bytes sub( padded.cbegin() + i, padded.cbegin() + i + blockSize );
+        uint32_t r = mersenne.get();
+        Bytes stream( blockSize );
+        memcpy( stream.data(), &r, blockSize );
+        Bytes scrambled = crypto::XOR( sub, stream );
+        encrypted.insert( encrypted.cend(), scrambled.cbegin(), scrambled.cend() );
+    }
+
+    encrypted.resize( text.size() );
+
+    return encrypted;
+}
+
+Bytes crypto::encryptMersenneCTR( const Bytes& text, const uint16_t& key ) {
+    return helperMersenneCTR( text, key );
+}
+
+Bytes crypto::decryptMersenneCTR( const Bytes& text, const uint16_t& key ) {
+    return helperMersenneCTR( text, key );
+}
