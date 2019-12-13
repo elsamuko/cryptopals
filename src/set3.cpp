@@ -2,10 +2,12 @@
 #include "random.hpp"
 #include "crypto.hpp"
 #include "converter.hpp"
+#include "threadpool.hpp"
 
 #include <vector>
 #include <string>
 #include <bitset>
+#include <future>
 #include <array>
 #include <ctime>
 
@@ -424,4 +426,52 @@ void challenge3_23() {
         CHECK_EQ( a, b );
     }
 
+}
+
+void challenge3_24() {
+
+    uint16_t key = 4972;
+    {
+        Bytes clear = bytes( "Password1234" );
+        Bytes encrypted = crypto::encryptMersenneCTR( clear, key );
+        Bytes decrypted = crypto::decryptMersenneCTR( encrypted, key );
+
+        CHECK_EQ( clear, decrypted );
+    }
+
+    {
+        Bytes suffix = bytes( "AAAAAAAAAAAAAA" );
+        Bytes clear = randombuffer::get( randomnumber::get( 20 ) ) + suffix;
+        Bytes encrypted = crypto::encryptMersenneCTR( clear, key );
+        Bytes encryptedSuffix( encrypted.cend() - suffix.size(), encrypted.cend() );
+
+        Bytes tmp = randombuffer::get( encrypted.size() - suffix.size() ) + suffix;
+        CHECK_EQ( clear.size(), tmp.size() );
+
+        uint16_t guess = 0;
+        uint16_t iter = 0;
+        {
+            Threadpool pool;
+            bool found = false;
+
+            // tmp and clear are the same length and end both with the same bytes if encrypted with the same key
+            // -> just try all keys
+            while( --iter ) {
+                pool.add( [iter, &guess, &found, &tmp, &suffix, &encryptedSuffix] {
+                    if( !found ) {
+                        Bytes encrypted2 = crypto::encryptMersenneCTR( tmp, iter );
+                        Bytes encryptedSuffix2( encrypted2.cend() - suffix.size(), encrypted2.cend() );
+
+                        if( encryptedSuffix == encryptedSuffix2 ) {
+                            found = true;
+                            guess = iter;
+                            LOG( "Guessed key is " << guess );
+                        }
+                    }
+                } );
+            }
+        }
+
+        CHECK_EQ( key, guess );
+    }
 }
