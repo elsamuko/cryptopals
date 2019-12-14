@@ -439,6 +439,7 @@ void challenge3_24() {
         CHECK_EQ( clear, decrypted );
     }
 
+    // guess mersenne seed by iterating all 16 bit values
     {
         Bytes suffix = bytes( "AAAAAAAAAAAAAA" );
         Bytes clear = randombuffer::get( randomnumber::get( 20 ) ) + suffix;
@@ -473,5 +474,15 @@ void challenge3_24() {
         }
 
         CHECK_EQ( key, guess );
+    }
+
+    // sub exercise: check, if a mersenne generated token is a mersenne generated token
+    // ???
+    {
+        uint32_t t = std::time( nullptr );
+        Bytes empty( 18 ); // 144 bit token
+        std::string token = converter::binaryToBase64( crypto::encryptMersenneCTR( empty, t ) );
+        std::string token2 = converter::binaryToBase64( crypto::encryptMersenneCTR( empty, t ) );
+        CHECK_EQ( token, token2 );
     }
 }
