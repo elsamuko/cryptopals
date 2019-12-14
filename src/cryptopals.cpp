@@ -1,6 +1,7 @@
 #include "set1.hpp"
 #include "set2.hpp"
 #include "set3.hpp"
+#include "stopwatch.hpp"
 
 #include <vector>
 #include <functional>
@@ -43,6 +44,8 @@ int main( int argc, char* argv[] ) {
         { "3.24", challenge3_24 },
     };
 
+    StopWatch sw;
+
     // run one challenge
     if( argc > 1 ) {
 
@@ -52,8 +55,11 @@ int main( int argc, char* argv[] ) {
             } );
 
             if( it != challenges.cend() ) {
-                LOG( "Running challenge " << it->first );
+                sw.start();
                 it->second();
+                auto ns = sw.stop();
+                LOG( "Running challenge " << it->first << " : " << ns / 1000000 << " ms" );
+
             } else {
                 LOG( argv[arg] << " not found" );
             }
@@ -63,8 +69,10 @@ int main( int argc, char* argv[] ) {
     // run all challenges
     else {
         for( auto&& it : challenges ) {
-            LOG( "Running challenge " << it.first );
+            sw.start();
             it.second();
+            auto ns = sw.stop();
+            LOG( "Running challenge " << it.first << " : " << ns / 1000000 << " ms" );
         }
     }
 
