@@ -239,42 +239,48 @@ FirstGuesses guessByLetterFrequency( const std::vector<Bytes>& encrypted ) {
     FirstGuesses crypt;
 
     for( Bytes& b : crypt ) {
-        b.reserve( vmax );
+        b.resize( vmax );
     }
 
     size_t pos = 0;
 
-    while( pos < vmax ) {
+    {
+        Threadpool tp;
 
-        Bytes bytes;
-        bytes.reserve( encrypted.size() );
+        while( pos < vmax ) {
 
-        // get pos byte of every string
-        for( const Bytes& one : encrypted ) {
-            if( one.size() > pos ) {
-                bytes.push_back( one[pos] );
-            }
+            tp.add( [&, pos] {
+                Bytes bytes;
+                bytes.reserve( encrypted.size() );
+
+                // get pos byte of every string
+                for( const Bytes& one : encrypted ) {
+                    if( one.size() > pos ) {
+                        bytes.push_back( one[pos] );
+                    }
+                }
+
+                uint8_t key = 0;
+                std::vector<std::pair<float, Byte>> guesses;
+                guesses.reserve( 256 );
+
+                do {
+                    Bytes text = crypto::XOR( bytes, key );
+
+                    float v = utils::isEnglishText( text );
+                    guesses.emplace_back( v, key );
+
+                } while( ++key );
+
+                std::sort( guesses.begin(), guesses.end() );
+
+                for( size_t i = 0; i < crypt.size(); ++i ) {
+                    crypt[i][pos] = guesses[255 - i].second;
+                }
+            } );
+
+            ++pos;
         }
-
-        uint8_t key = 0;
-        std::vector<std::pair<float, Byte>> guesses;
-        guesses.reserve( 256 );
-
-        do {
-            Bytes text = crypto::XOR( bytes, key );
-
-            float v = utils::isEnglishText( text );
-            guesses.emplace_back( v, key );
-
-        } while( ++key );
-
-        std::sort( guesses.begin(), guesses.end() );
-
-        for( size_t i = 0; i < crypt.size(); ++i ) {
-            crypt[i].push_back( guesses[255 - i].second );
-        }
-
-        ++pos;
     }
 
     return crypt;
@@ -282,25 +288,30 @@ FirstGuesses guessByLetterFrequency( const std::vector<Bytes>& encrypted ) {
 
 Bytes guessByWordFrequency( const std::vector<Bytes>& encrypted, const FirstGuesses& crypts ) {
     Bytes bestCrypt = crypts[0];
-    float bestGuess = -1000.f;
+    {
+        Threadpool tp;
 
-    for( size_t pos = 0; pos < crypts[0].size(); ++pos ) {
+        for( size_t pos = 0; pos < crypts[0].size(); ++pos ) {
 
-        size_t bestPos = 0;
+            tp.add( [&, pos] {
+                size_t bestPos = 0;
+                float bestGuess = -1000.f;
+                Bytes copy = bestCrypt;
 
-        for( size_t gPos = 0; gPos < crypts.size(); ++gPos ) {
+                for( size_t gPos = 0; gPos < crypts.size(); ++gPos ) {
+                    copy[pos] = crypts[gPos][pos];
+                    std::vector<Bytes> text = crypto::XOR( encrypted, copy );
+                    float v = utils::areEnglishSentences( text );
 
-            bestCrypt[pos] = crypts[gPos][pos];
-            std::vector<Bytes> text = crypto::XOR( encrypted, bestCrypt );
-            float v = utils::areEnglishSentences( text );
+                    if( v > bestGuess ) {
+                        bestPos = gPos;
+                        bestGuess = v;
+                    }
+                }
 
-            if( v > bestGuess ) {
-                bestPos = gPos;
-                bestGuess = v;
-            }
+                bestCrypt[pos] = crypts[bestPos][pos];
+            } );
         }
-
-        bestCrypt[pos] = crypts[bestPos][pos];
     }
 
     return bestCrypt;
