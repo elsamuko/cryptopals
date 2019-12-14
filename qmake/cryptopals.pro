@@ -20,6 +20,7 @@ HEADERS += $${SRC_DIR}/types.hpp
 HEADERS += $${SRC_DIR}/log.hpp
 SOURCES += $${SRC_DIR}/log.cpp
 HEADERS += $${SRC_DIR}/threadpool.hpp
+HEADERS += $${SRC_DIR}/stopwatch.hpp
 HEADERS += $${SRC_DIR}/english_words.hpp
 
 HEADERS += $${SRC_DIR}/set1.hpp
