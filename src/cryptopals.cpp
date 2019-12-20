@@ -46,6 +46,7 @@ int main( int argc, char* argv[] ) {
 
         // https://cryptopals.com/sets/4
         { "4.25", challenge4_25 },
+        { "4.26", challenge4_26 },
     };
 
     StopWatch sw;
