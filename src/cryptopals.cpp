@@ -1,6 +1,7 @@
 #include "set1.hpp"
 #include "set2.hpp"
 #include "set3.hpp"
+#include "set4.hpp"
 #include "stopwatch.hpp"
 
 #include <vector>
@@ -42,6 +43,9 @@ int main( int argc, char* argv[] ) {
         { "3.22", challenge3_22 },
         { "3.23", challenge3_23 },
         { "3.24", challenge3_24 },
+
+        // https://cryptopals.com/sets/4
+        { "4.25", challenge4_25 },
     };
 
     StopWatch sw;

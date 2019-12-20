@@ -29,6 +29,8 @@ HEADERS += $${SRC_DIR}/set2.hpp
 SOURCES += $${SRC_DIR}/set2.cpp
 HEADERS += $${SRC_DIR}/set3.hpp
 SOURCES += $${SRC_DIR}/set3.cpp
+HEADERS += $${SRC_DIR}/set4.hpp
+SOURCES += $${SRC_DIR}/set4.cpp
 
 include( setup.pri )
 # include( openssl.pri )
