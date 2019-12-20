@@ -319,6 +319,58 @@ Bytes helperAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonc
     return encrypted;
 }
 
+Bytes crypto::editAES128CTR( const Bytes& encrypted, const size_t& offset, const Bytes& replacement, const Bytes& key, const uint64_t& nonce ) {
+
+    if( ( offset + replacement.size() ) > encrypted.size() ) {
+        LOG( "Replacement doesn't fit into encrypted stream" );
+        return Bytes();
+    }
+
+    Bytes nonce_counter( crypto::blockSize );
+    Bytes padded = crypto::padPKCS7( encrypted );
+
+    // |                |                |                |                |
+    // |                |<----######################----->|                |
+    size_t from = offset - offset % crypto::blockSize;
+    size_t to   = offset + replacement.size() - ( offset + replacement.size() ) % crypto::blockSize + crypto::blockSize;
+
+    // decrypt part where replacement should go
+    {
+        uint64_t counter = from / crypto::blockSize;
+        std::memcpy( &nonce_counter[0], &nonce, sizeof( nonce ) );
+
+        for( size_t i = from; i < to; i += crypto::blockSize ) {
+            Bytes sub( padded.cbegin() + i, padded.cbegin() + i + crypto::blockSize );
+            std::memcpy( &nonce_counter[crypto::blockSize / 2], &counter, sizeof( counter ) );
+            Bytes xorStream = crypto::encryptAES128ECB( nonce_counter, key );
+            Bytes unscrambled = crypto::XOR( sub, xorStream );
+            std::memcpy( &padded[i], unscrambled.data(), crypto::blockSize );
+            counter++;
+        }
+    }
+
+    // replace clear text
+    std::memcpy( &padded[offset], replacement.data(), replacement.size() );
+
+    // re-encrypt
+    {
+        uint64_t counter = from / crypto::blockSize;
+        std::memcpy( &nonce_counter[0], &nonce, sizeof( nonce ) );
+
+        for( size_t i = from; i < to; i += crypto::blockSize ) {
+            Bytes sub( padded.cbegin() + i, padded.cbegin() + i + crypto::blockSize );
+            std::memcpy( &nonce_counter[crypto::blockSize / 2], &counter, sizeof( counter ) );
+            Bytes xorStream = crypto::encryptAES128ECB( nonce_counter, key );
+            Bytes scrambled = crypto::XOR( sub, xorStream );
+            std::memcpy( &padded[i], scrambled.data(), crypto::blockSize );
+            counter++;
+        }
+    }
+
+    padded.resize( encrypted.size() );
+    return padded;
+}
+
 Bytes crypto::encryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce ) {
     return helperAES128CTR( text, key, nonce );
 }

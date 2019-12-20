@@ -17,6 +17,9 @@ Bytes encryptAES128CBC( const Bytes& text, const Bytes& key, const Bytes& iv );
 Bytes decryptAES128CBC( const Bytes& data, const Bytes& key, const Bytes& iv );
 
 Bytes encryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce );
+Bytes editAES128CTR( const Bytes& encrypted,
+                     const size_t& offset, const Bytes& replacement,
+                     const Bytes& key, const uint64_t& nonce );
 Bytes decryptAES128CTR( const Bytes& text, const Bytes& key, const uint64_t& nonce );
 
 Bytes encryptMersenneCTR( const Bytes& text, const uint16_t& key );
