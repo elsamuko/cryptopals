@@ -357,8 +357,8 @@ void challenge2_16() {
     // |admin|true
     // to
     // ;admin=true
-    size_t pos1 = 16; // position of first '|'
-    size_t pos2 = 22; // position of second '|'
+    size_t pos1 = 16; // position of first '|' minus block size
+    size_t pos2 = 22; // position of second '|' minus block size
     bool isAdmin = false;
 
     for( size_t flip1 = 0; flip1 < 256; ++flip1 ) {
