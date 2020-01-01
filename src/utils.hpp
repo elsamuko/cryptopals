@@ -54,6 +54,9 @@ std::map<std::string, std::string> parseGETParams( const std::string& params );
 //! \returns true, if string contains semicolon separated pair admin=true
 bool isAdmin( const std::string& params );
 
+//! \returns false, if string contains control characters
+bool isAscii( const std::string& params );
+
 //! \returns "email=foo@bar.com&uid=10&role=user" for input "foo@bar.com"
 std::string profileFor( const std::string& mail );
 

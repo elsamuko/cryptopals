@@ -381,6 +381,14 @@ bool utils::isAdmin( const std::string& params ) {
     return pairs["admin"] == "true";
 }
 
+bool utils::isAscii( const std::string& params ) {
+    for( const char c : params ) {
+        if( std::iscntrl( c ) ) { return false; }
+    }
+
+    return true;
+}
+
 void utils::logBlock( const std::string& in ) {
     size_t size = in.size();
     std::stringstream out;
