@@ -111,3 +111,66 @@ void challenge4_26() {
 stop:
     CHECK( isAdmin );
 }
+
+void challenge4_27() {
+    // encrypt/decrypt with secret key
+    struct {
+        // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
+        Bytes key = { 0x0c, 0xc8, 0xdf, 0x18, 0x31, 0x4d, 0x46, 0x03, 0x8d, 0x53, 0x65, 0x17, 0xa7, 0x56, 0x03, 0x2d };
+
+        Bytes pack( const std::string& userdata ) const {
+            std::string request = utils::generateGETRequest( userdata );
+            Bytes data( request.cbegin(), request.cend() );
+            Bytes encrypted = crypto::encryptAES128CBC( data, key, key );
+            return encrypted;
+        }
+
+        std::string decrypt( const Bytes& encrypted ) const {
+            Bytes decrypted = crypto::decryptAES128CBC( encrypted, key, key );
+            std::string request( decrypted.cbegin(), decrypted.cend() );
+            return request;
+        }
+
+        std::optional<std::string> isBad( const Bytes& encrypted ) const {
+            std::string request = decrypt( encrypted );
+
+            if( !utils::isAscii( request ) ) {
+                return request;
+            }
+
+            return {};
+        }
+    } Packer;
+
+    // ensure encrypted data is min 3 blocks big
+    // AES-CBC(P_1, P_2, P_3) -> C_1, C_2, C_3
+    std::string userdata( 3 * crypto::blockSize, 'A' );
+    Bytes encrypted = Packer.pack( userdata );
+    CHECK( !Packer.isBad( encrypted ) );
+
+    // C_1, C_2, C_3 -> C_1, 0, C_1
+    {
+        // nullify 2nd block
+        for( size_t pos = crypto::blockSize; pos < 2 * crypto::blockSize; ++pos ) {
+            encrypted[pos] = 0;
+        }
+
+        // copy first to third block
+        for( size_t pos = 0; pos < crypto::blockSize; ++pos ) {
+            encrypted[pos + 2 * crypto::blockSize] = encrypted[pos];
+        }
+    }
+    auto isBad = Packer.isBad( encrypted );
+    CHECK( isBad );
+
+    if( !isBad ) { return; }
+
+    std::string error = isBad.value();
+
+    // P'_1 XOR P'_3
+    Bytes p1( error.cbegin(), error.cbegin() + crypto::blockSize );
+    Bytes p3( error.cbegin() + 2 * crypto::blockSize, error.cbegin() + 3 * crypto::blockSize );
+    Bytes key = crypto::XOR( p1, p3 );
+    CHECK_EQ( key, Packer.key );
+
+}
