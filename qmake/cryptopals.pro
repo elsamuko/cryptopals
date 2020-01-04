@@ -10,6 +10,7 @@ SOURCES += $${SRC_DIR}/utils.cpp
 HEADERS += $${SRC_DIR}/crypto.hpp
 SOURCES += $${SRC_DIR}/crypto.cpp
 HEADERS += $${SRC_DIR}/aesni.hpp
+HEADERS += $${SRC_DIR}/hash.hpp
 HEADERS += $${SRC_DIR}/openssl.hpp
 HEADERS += $${SRC_DIR}/random.hpp
 HEADERS += $${SRC_DIR}/cracker.hpp
