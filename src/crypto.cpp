@@ -7,6 +7,7 @@
 
 #include "converter.hpp"
 #include "random.hpp"
+#include "hash.hpp"
 #include "log.hpp"
 
 #if 0
@@ -407,4 +408,8 @@ Bytes crypto::encryptMersenneCTR( const Bytes& text, const uint16_t& key ) {
 
 Bytes crypto::decryptMersenneCTR( const Bytes& text, const uint16_t& key ) {
     return helperMersenneCTR( text, key );
+}
+
+Bytes crypto::macSha1( const Bytes& text, const Bytes& key ) {
+    return hash::sha1( key + text );
 }
