@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include "crypto.hpp"
 #include "random.hpp"
+#include "converter.hpp"
+#include "hash.hpp"
 #include "log.hpp"
 
 
@@ -173,4 +175,10 @@ void challenge4_27() {
     Bytes key = crypto::XOR( p1, p3 );
     CHECK_EQ( key, Packer.key );
 
+}
+
+void challenge4_28() {
+    Bytes data = bytes( "Hallo" );
+    Bytes sha1 = hash::sha1( data );
+    CHECK_EQ( converter::binaryToHex( sha1 ), "59d9a6df06b9f610f7db8e036896ed03662d168f" );
 }

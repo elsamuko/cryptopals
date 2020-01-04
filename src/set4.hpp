@@ -8,3 +8,6 @@ void challenge4_26();
 
 // https://cryptopals.com/sets/4/challenges/27
 void challenge4_27();
+
+// https://cryptopals.com/sets/4/challenges/28
+void challenge4_28();
