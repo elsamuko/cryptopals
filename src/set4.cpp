@@ -178,7 +178,33 @@ void challenge4_27() {
 }
 
 void challenge4_28() {
+    // verify sha1 code
     Bytes data = bytes( "Hallo" );
     Bytes sha1 = hash::sha1( data );
     CHECK_EQ( converter::binaryToHex( sha1 ), "59d9a6df06b9f610f7db8e036896ed03662d168f" );
+
+    // generate sha1 MAC
+    Bytes key = crypto::genKey();
+    Bytes message = randombuffer::get( 100 );
+    Bytes mac = crypto::macSha1( message, key );
+
+    // flip every bit of the message and verify its MAC changed
+    for( size_t i = 0; i < 800; ++i ) {
+        size_t pos = i / 8;
+        uint8_t flip = 1 << i % 8;
+
+        message[pos] ^= flip;
+        Bytes newMac = crypto::macSha1( message, key );
+        CHECK_NE( newMac, mac );
+
+        // restore original message
+        message[pos] ^= flip;
+    }
+
+    // verify, that a random generated key cannot generate the same MAC
+    for( size_t i = 0; i < 1000; ++i ) {
+        Bytes newKey = crypto::genKey();
+        Bytes newMac = crypto::macSha1( message, newKey );
+        CHECK_NE( newMac, mac );
+    }
 }
