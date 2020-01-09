@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
+#include <array>
 
 namespace hash {
 
@@ -29,37 +30,75 @@ inline uint64_t endian_reverse( uint64_t x ) {
     return ( step16 & 0x00FF00FF00FF00FFULL ) << 8 | ( step16 & 0xFF00FF00FF00FF00ULL ) >> 8;
 }
 
-//! \sa https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode
+using Magic = std::array<uint32_t, 5>;
+
 template<class Container = std::vector<uint8_t>>
-Container sha1( const Container& in ) {
-    static_assert( sizeof( typename Container::value_type ) == 1, "Container type must be 8 bit" );
+inline Container magicsToSha( const Magic& magics ) {
 
-    Container work = in;
+    Container res( 20, 0 );
 
-    uint32_t h0 = 0x67452301;
-    uint32_t h1 = 0xEFCDAB89;
-    uint32_t h2 = 0x98BADCFE;
-    uint32_t h3 = 0x10325476;
-    uint32_t h4 = 0xC3D2E1F0;
+    for( size_t i = 0; i < 5; ++i ) {
+        uint32_t tmp = endian_reverse( magics[i] );
+        memcpy( res.data() + 4 * i, &tmp, 4 );
+    }
 
-    size_t bytes = in.size();
+    return res;
+}
+
+template<class Container = std::vector<uint8_t>>
+inline Magic shaToMagics( const Container& in ) {
+
+    Magic magics;
+
+    for( size_t i = 0; i < 5; ++i ) {
+        memcpy( &magics[i], in.data() + 4 * i, 4 );
+        magics[i] = endian_reverse( magics[i] );
+    }
+
+    return magics;
+}
+
+template<class Container = std::vector<uint8_t>>
+Container sha1MDPadding( const size_t& bytes ) {
     uint64_t bits = bytes * 8;
 
     // pad with zeros
     size_t fill = 64 - bytes % 64;
-    work.resize( work.size() + fill );
-    size_t size = work.size();
+
+    // at least 9 bytes for parity bit and length
+    if( fill < 9 ) { fill += 64; }
+
+    Container padding( fill, 0 );
 
     // parity bit, always 1 for byte container
-    work[bytes] = 0x80;
+    padding[0] = 0x80;
 
     // put size in big endian at end
     uint64_t bitsBE = endian_reverse( bits );
-    memcpy( &work[size - 8], &bitsBE, 8 );
+    memcpy( &padding[fill - 8], &bitsBE, 8 );
+
+    return padding;
+}
+
+const Magic SHA1_MAGICS = { 0x67452301,
+                            0xEFCDAB89,
+                            0x98BADCFE,
+                            0x10325476,
+                            0xC3D2E1F0
+                          };
+
+//! \sa https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode
+template<class Container = std::vector<uint8_t>>
+Container sha1( const Container& in, Magic magics = SHA1_MAGICS, size_t offset = 0 ) {
+    static_assert( sizeof( typename Container::value_type ) == 1, "Container type must be 8 bit" );
+
+    size_t bytes = in.size();
+    Container work = in + sha1MDPadding<Container>( bytes );
+    size_t size = work.size();
 
     std::vector<uint32_t> w( 80 );
 
-    for( size_t pos = 0; pos < size; pos += 64 ) {
+    for( size_t pos = offset; pos < size; pos += 64 ) {
         // copy work into first 16 words as big endian
         memcpy( w.data(), &work[pos], 64 );
 
@@ -72,11 +111,11 @@ Container sha1( const Container& in ) {
             w[i] = rotL<1>( w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16] );
         }
 
-        uint32_t a = h0;
-        uint32_t b = h1;
-        uint32_t c = h2;
-        uint32_t d = h3;
-        uint32_t e = h4;
+        uint32_t a = magics[0];
+        uint32_t b = magics[1];
+        uint32_t c = magics[2];
+        uint32_t d = magics[3];
+        uint32_t e = magics[4];
         uint32_t f = 0;
         uint32_t k = 0;
 
@@ -103,26 +142,14 @@ Container sha1( const Container& in ) {
             a = temp;
         }
 
-        h0 += a;
-        h1 += b;
-        h2 += c;
-        h3 += d;
-        h4 += e;
+        magics[0] += a;
+        magics[1] += b;
+        magics[2] += c;
+        magics[3] += d;
+        magics[4] += e;
     }
 
-    h0 = endian_reverse( h0 );
-    h1 = endian_reverse( h1 );
-    h2 = endian_reverse( h2 );
-    h3 = endian_reverse( h3 );
-    h4 = endian_reverse( h4 );
-
-    Container res( 20, 0 );
-    memcpy( res.data() +  0, &h0, 4 );
-    memcpy( res.data() +  4, &h1, 4 );
-    memcpy( res.data() +  8, &h2, 4 );
-    memcpy( res.data() + 12, &h3, 4 );
-    memcpy( res.data() + 16, &h4, 4 );
-
+    Container res = magicsToSha( magics );
     return res;
 }
 
