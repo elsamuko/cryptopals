@@ -216,3 +216,40 @@ void challenge4_28() {
         CHECK_NE( newMac, mac );
     }
 }
+
+void challenge4_29() {
+    Bytes key = { 0x22, 0xb7, 0x1a, 0x9b, 0x98, 0xf5, 0xae, 0x90, 0xac, 0xea, 0xfd, 0xee, 0x9a, 0x57, 0xe1, 0xdf };
+    Bytes suffix = bytes( ";admin=true" );
+    Bytes message = bytes( "comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon" );
+    Bytes mac = crypto::macSha1( message, key );
+    LOG( "ORIG   : " << converter::binaryToHex( mac ) );
+
+    // size of message + key is at least size of message
+    size_t guess = message.size();
+
+    for( ; guess < 1000; ++guess ) {
+
+        Bytes padding = hash::sha1MDPadding( guess );
+        Bytes attack = message + padding + suffix;
+        Bytes server = crypto::macSha1( attack, key );
+
+        hash::Magic magic = hash::shaToMagics( mac );
+        Bytes sha = hash::magicsToSha( magic );
+        CHECK_EQ( mac, sha );
+
+        Bytes fakeKey( guess - message.size(), 0 );
+        size_t hashedSize = guess + padding.size();
+        CHECK( ( hashedSize % 64 ) == 0 );
+        Bytes forged = hash::sha1( fakeKey + attack, magic, hashedSize );
+
+        if( forged == server ) {
+            // we found a message, the server will accept
+            LOG( "GUESS  : " << guess );
+            LOG( "ORIG+  : " << converter::binaryToHex( server ) );
+            LOG( "FORGED : " << converter::binaryToHex( forged ) );
+            break;
+        }
+    }
+
+    CHECK_EQ( guess, key.size() + message.size() );
+}
