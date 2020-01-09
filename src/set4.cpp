@@ -179,9 +179,17 @@ void challenge4_27() {
 
 void challenge4_28() {
     // verify sha1 code
-    Bytes data = bytes( "Hallo" );
-    Bytes sha1 = hash::sha1( data );
-    CHECK_EQ( converter::binaryToHex( sha1 ), "59d9a6df06b9f610f7db8e036896ed03662d168f" );
+    std::map<std::string, std::string> hashes = {
+        {"", "da39a3ee5e6b4b0d3255bfef95601890afd80709"},
+        {"Hallo", "59d9a6df06b9f610f7db8e036896ed03662d168f"},
+        {std::string( 127, 'A' ), "8c8393ac8939430753d7cb568e2f2237bc62d683"},
+    };
+
+    for( auto&& hash : hashes ) {
+        Bytes data = bytes( hash.first );
+        Bytes sha1 = hash::sha1( data );
+        CHECK_EQ( converter::binaryToHex( sha1 ), hash.second );
+    }
 
     // generate sha1 MAC
     Bytes key = crypto::genKey();
