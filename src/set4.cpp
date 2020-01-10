@@ -167,7 +167,7 @@ void challenge4_27() {
 
     if( !isBad ) { return; }
 
-    std::string error = isBad.value();
+    std::string error = isBad.value_or( "" );
 
     // P'_1 XOR P'_3
     Bytes p1( error.cbegin(), error.cbegin() + crypto::blockSize );

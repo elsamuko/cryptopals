@@ -58,12 +58,12 @@ void challenge2_10() {
         Bytes encrypted = utils::fromBase64File( "2_10.txt" );
         Bytes viv2( 16, 0 );
         Bytes decrypted = crypto::decryptAES128CBC( encrypted, vkey, viv2 );
-        std::string plain( decrypted.cbegin(), decrypted.cend() );
+        std::string plain2( decrypted.cbegin(), decrypted.cend() );
 
         std::string expected = "I'm back and I'm ringin' the bell \n"
                                "A rockin' on the mike while the fly girls yell \n";
-        plain.resize( expected.size() );
-        CHECK_EQ( plain, expected );
+        plain2.resize( expected.size() );
+        CHECK_EQ( plain2, expected );
     }
 }
 

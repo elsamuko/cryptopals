@@ -120,7 +120,7 @@ struct Crypto {
         try {
             Bytes iv = Bytes( iv_ciphertext.cbegin(), iv_ciphertext.cbegin() + crypto::blockSize );
             Bytes ciphertext = Bytes( iv_ciphertext.cbegin() + crypto::blockSize, iv_ciphertext.cend() );
-            Bytes decrypted = crypto::decryptAES128CBC( ciphertext, key, iv );
+            crypto::decryptAES128CBC( ciphertext, key, iv );
             return true;
         } catch( std::invalid_argument ia ) {
             // LOG( ia.what() );

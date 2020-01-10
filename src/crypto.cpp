@@ -61,10 +61,10 @@ std::vector<Bytes> crypto::XOR( const std::vector<Bytes>& data, const Bytes& key
 }
 
 template<class Container>
-Container crypto::padPKCS7( const Container& input, const size_t blockSize ) {
+Container crypto::padPKCS7( const Container& input, const size_t block ) {
     size_t size = input.size();
 
-    size_t padSize = blockSize - size % blockSize;
+    size_t padSize = block - size % block;
     Container rv = input;
     rv.reserve( size + padSize );
 
@@ -80,12 +80,14 @@ template std::string crypto::padPKCS7( const std::string& input, const size_t bl
 
 template<class Container>
 Container crypto::unpadPKCS7( const Container& input ) {
+    using type = typename Container::value_type;
+
     if( input.empty() ) { return {}; }
 
     size_t size = input.size();
-    size_t padSize = static_cast<size_t>( input.back() );
+    type padSize = input.back();
 
-    if( input.size() < padSize ) {
+    if( input.size() < static_cast<size_t>( padSize ) ) {
         throw std::invalid_argument( "PKCS7: Padding too big" );
     }
 
@@ -94,7 +96,7 @@ Container crypto::unpadPKCS7( const Container& input ) {
     }
 
     // validate PKCS7 format
-    for( size_t i = 1; i <= padSize; ++i ) {
+    for( type i = 1; i <= padSize; ++i ) {
 
         if( input[size - i] != padSize ) {
             throw std::invalid_argument( "PKCS7: Bad padding" );
