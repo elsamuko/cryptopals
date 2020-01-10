@@ -119,7 +119,7 @@ Container sha1( const Container& in, Magic magics = SHA1_MAGICS, size_t offset =
         uint32_t f = 0;
         uint32_t k = 0;
 
-        for( size_t i = 0; i < 80; ++i ) {
+        for( unsigned long i = 0; i < 80; ++i ) {
             if( between( 0ul, i, 19ul ) ) {
                 f = ( b & c ) | ( ( ~ b ) & d );
                 k = 0x5A827999;
