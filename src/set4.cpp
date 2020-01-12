@@ -229,18 +229,69 @@ void challenge4_29() {
 
     for( ; guess < 1000; ++guess ) {
 
-        Bytes padding = hash::sha1MDPadding( guess );
+        Bytes padding = hash::sha1MDPadding<Bytes, true>( guess );
         Bytes attack = message + padding + suffix;
         Bytes server = crypto::macSha1( attack, key );
 
-        hash::Magic magic = hash::shaToMagics( mac );
-        Bytes sha = hash::magicsToSha( magic );
+        hash::Magic<5> magic = hash::shaToMagics<Bytes, 5, true>( mac );
+        Bytes sha = hash::magicsToSha<Bytes, 5, true>( magic );
         CHECK_EQ( mac, sha );
 
         Bytes fakeKey( guess - message.size(), 0 );
         size_t hashedSize = guess + padding.size();
         CHECK( ( hashedSize % 64 ) == 0 );
         Bytes forged = hash::sha1( fakeKey + attack, magic, hashedSize );
+
+        if( forged == server ) {
+            // we found a message, the server will accept
+            LOG( "GUESS  : " << guess );
+            LOG( "ORIG+  : " << converter::binaryToHex( server ) );
+            LOG( "FORGED : " << converter::binaryToHex( forged ) );
+            break;
+        }
+    }
+
+    CHECK_EQ( guess, key.size() + message.size() );
+}
+
+void challenge4_30() {
+    // verify md4 code
+    std::map<std::string, std::string> hashes = {
+        {"", "31d6cfe0d16ae931b73c59d7e0c089c0"},
+        {"Hallo", "4d6e0719eea8604d62a2e62bb63f1ebd"},
+        {std::string( 127, 'A' ), "dbbc89e0dff14f64313a077e1ddc5e01"},
+    };
+
+    for( auto&& hash : hashes ) {
+        Bytes data = bytes( hash.first );
+        Bytes md4 = hash::md4( data );
+        CHECK_EQ( converter::binaryToHex( md4 ), hash.second );
+    }
+
+    // extend hash
+    Bytes key = { 0x22, 0xb7, 0x1a, 0x9b, 0x98, 0xf5, 0xae, 0x90, 0xac, 0xea, 0xfd, 0xee, 0x9a, 0x57, 0xe1, 0xdf };
+    Bytes suffix = bytes( ";admin=true" );
+    Bytes message = bytes( "comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon" );
+    Bytes mac = crypto::macMd4( message, key );
+    LOG( "ORIG   : " << converter::binaryToHex( mac ) );
+
+    // size of message + key is at least size of message
+    size_t guess = message.size();
+
+    for( ; guess < 1000; ++guess ) {
+
+        Bytes padding = hash::sha1MDPadding<Bytes, false>( guess );
+        Bytes attack = message + padding + suffix;
+        Bytes server = crypto::macMd4( attack, key );
+
+        hash::Magic<4> magic = hash::shaToMagics<Bytes, 4, false>( mac );
+        Bytes sha = hash::magicsToSha<Bytes, 4, false>( magic );
+        CHECK_EQ( mac, sha );
+
+        Bytes fakeKey( guess - message.size(), 0 );
+        size_t hashedSize = guess + padding.size();
+        CHECK( ( hashedSize % 64 ) == 0 );
+        Bytes forged = hash::md4( fakeKey + attack, magic, hashedSize );
 
         if( forged == server ) {
             // we found a message, the server will accept
