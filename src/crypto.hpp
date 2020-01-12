@@ -27,6 +27,7 @@ Bytes decryptMersenneCTR( const Bytes& text, const uint16_t& key );
 
 Bytes macSha1( const Bytes& text, const Bytes& key );
 Bytes macMd4( const Bytes& text, const Bytes& key );
+Bytes hmacSha1( const Bytes& text, Bytes key );
 
 //! pad \p input in PKCS#7 to \p size bytes
 template <class Container>

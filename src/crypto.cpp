@@ -419,3 +419,21 @@ Bytes crypto::macSha1( const Bytes& text, const Bytes& key ) {
 Bytes crypto::macMd4( const Bytes& text, const Bytes& key ) {
     return hash::md4( key + text );
 }
+
+Bytes crypto::hmacSha1( const Bytes& text, Bytes key ) {
+    size_t sha1BlockSize = 64;
+
+    if( key.size() > sha1BlockSize ) {
+        key = hash::sha1( key );
+    }
+
+    if( key.size() < sha1BlockSize ) {
+        key.resize( sha1BlockSize, 0 );
+    }
+
+    Bytes o_key_pad = crypto::XOR( key, Bytes( sha1BlockSize, 0x5c ) );
+    Bytes i_key_pad = crypto::XOR( key, Bytes( sha1BlockSize, 0x36 ) );
+
+    Bytes hmac = hash::sha1( o_key_pad + hash::sha1( i_key_pad + text ) );
+    return hmac;
+}
