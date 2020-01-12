@@ -415,3 +415,7 @@ Bytes crypto::decryptMersenneCTR( const Bytes& text, const uint16_t& key ) {
 Bytes crypto::macSha1( const Bytes& text, const Bytes& key ) {
     return hash::sha1( key + text );
 }
+
+Bytes crypto::macMd4( const Bytes& text, const Bytes& key ) {
+    return hash::md4( key + text );
+}
