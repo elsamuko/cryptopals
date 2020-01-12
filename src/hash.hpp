@@ -30,35 +30,43 @@ inline uint64_t endian_reverse( uint64_t x ) {
     return ( step16 & 0x00FF00FF00FF00FFULL ) << 8 | ( step16 & 0xFF00FF00FF00FF00ULL ) >> 8;
 }
 
-using Magic = std::array<uint32_t, 5>;
+template<size_t T>
+using Magic = std::array<uint32_t, T>;
 
-template<class Container = std::vector<uint8_t>>
-inline Container magicsToSha( const Magic& magics ) {
+template<class Container = std::vector<uint8_t>, size_t T, bool reverse>
+inline Container magicsToSha( const Magic<T>& magics ) {
 
-    Container res( 20, 0 );
+    Container res( T * 4, 0 );
 
-    for( size_t i = 0; i < 5; ++i ) {
-        uint32_t tmp = endian_reverse( magics[i] );
-        memcpy( res.data() + 4 * i, &tmp, 4 );
+    for( size_t i = 0; i < magics.size(); ++i ) {
+        if constexpr( reverse ) {
+            uint32_t tmp = endian_reverse( magics[i] );
+            memcpy( res.data() + 4 * i, &tmp, 4 );
+        } else {
+            memcpy( res.data() + 4 * i, &magics[i], 4 );
+        }
     }
 
     return res;
 }
 
-template<class Container = std::vector<uint8_t>>
-inline Magic shaToMagics( const Container& in ) {
+template<class Container = std::vector<uint8_t>, size_t T, bool reverse>
+inline Magic<T> shaToMagics( const Container& in ) {
 
-    Magic magics;
+    Magic<T> magics;
 
-    for( size_t i = 0; i < 5; ++i ) {
+    for( size_t i = 0; i < magics.size(); ++i ) {
         memcpy( &magics[i], in.data() + 4 * i, 4 );
-        magics[i] = endian_reverse( magics[i] );
+
+        if constexpr( reverse ) {
+            magics[i] = endian_reverse( magics[i] );
+        }
     }
 
     return magics;
 }
 
-template<class Container = std::vector<uint8_t>>
+template<class Container = std::vector<uint8_t>, bool reverse>
 Container sha1MDPadding( const size_t& bytes ) {
     uint64_t bits = bytes * 8;
 
@@ -74,26 +82,29 @@ Container sha1MDPadding( const size_t& bytes ) {
     padding[0] = 0x80;
 
     // put size in big endian at end
-    uint64_t bitsBE = endian_reverse( bits );
-    memcpy( &padding[fill - 8], &bitsBE, 8 );
+    if constexpr( reverse ) {
+        bits = endian_reverse( bits );
+    }
+
+    memcpy( &padding[fill - 8], &bits, 8 );
 
     return padding;
 }
 
-const Magic SHA1_MAGICS = { 0x67452301,
-                            0xEFCDAB89,
-                            0x98BADCFE,
-                            0x10325476,
-                            0xC3D2E1F0
-                          };
+const Magic<5> SHA1_MAGICS = { 0x67452301,
+                               0xEFCDAB89,
+                               0x98BADCFE,
+                               0x10325476,
+                               0xC3D2E1F0
+                             };
 
 //! \sa https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode
 template<class Container = std::vector<uint8_t>>
-Container sha1( const Container& in, Magic magics = SHA1_MAGICS, size_t offset = 0 ) {
+Container sha1( const Container& in, Magic<5> magics = SHA1_MAGICS, size_t offset = 0 ) {
     static_assert( sizeof( typename Container::value_type ) == 1, "Container type must be 8 bit" );
 
     size_t bytes = in.size();
-    Container work = in + sha1MDPadding<Container>( bytes );
+    Container work = in + sha1MDPadding<Container, true>( bytes );
     size_t size = work.size();
 
     std::vector<uint32_t> w( 80 );
@@ -149,7 +160,85 @@ Container sha1( const Container& in, Magic magics = SHA1_MAGICS, size_t offset =
         magics[4] += e;
     }
 
-    Container res = magicsToSha( magics );
+    Container res = magicsToSha<Container, 5, true>( magics );
+    return res;
+}
+
+const Magic<4> MD4_MAGICS = { 0x67452301,
+                              0xefcdab89,
+                              0x98badcfe,
+                              0x10325476,
+                            };
+
+//! \sa https://tools.ietf.org/html/rfc1320
+template<class Container = std::vector<uint8_t>>
+Container md4( const Container& in, Magic<4> magics = MD4_MAGICS, size_t offset = 0 ) {
+
+    size_t bytes = in.size();
+    Container work = in + sha1MDPadding<Container, false>( bytes );
+    size_t size = work.size();
+
+    std::vector<uint32_t> X( 80 );
+
+    uint32_t A = magics[0];
+    uint32_t B = magics[1];
+    uint32_t C = magics[2];
+    uint32_t D = magics[3];
+
+    auto F = []( const uint32_t& X, const uint32_t& Y, const uint32_t& Z ) { return ( X & Y ) | ( ~X & Z ); };
+    auto G = []( const uint32_t& X, const uint32_t& Y, const uint32_t& Z ) { return ( X & Y ) | ( X & Z ) | ( Y & Z );};
+    auto H = []( const uint32_t& X, const uint32_t& Y, const uint32_t& Z ) { return X ^ Y ^ Z; };
+
+    for( size_t pos = offset; pos < size; pos += 64 ) {
+        // copy work into first 16 words as big endian
+        memcpy( X.data(), &work[pos], 64 );
+
+        // and convert to little endian
+        //        for( size_t i = 0; i < 16; ++i ) {
+        //            X[i] = endian_reverse( X[i] );
+        //        }
+
+        uint32_t AA = A;
+        uint32_t BB = B;
+        uint32_t CC = C;
+        uint32_t DD = D;
+
+        // round 1
+#define OP(a,b,c,d,k,s) a = rotL<s>( a + F( b, c, d ) + X[k] )
+        OP( A, B, C, D,  0,  3 ); OP( D, A, B, C,  1,  7 ); OP( C, D, A, B,  2, 11 ); OP( B, C, D, A,  3, 19 );
+        OP( A, B, C, D,  4,  3 ); OP( D, A, B, C,  5,  7 ); OP( C, D, A, B,  6, 11 ); OP( B, C, D, A,  7, 19 );
+        OP( A, B, C, D,  8,  3 ); OP( D, A, B, C,  9,  7 ); OP( C, D, A, B, 10, 11 ); OP( B, C, D, A, 11, 19 );
+        OP( A, B, C, D, 12,  3 ); OP( D, A, B, C, 13,  7 ); OP( C, D, A, B, 14, 11 ); OP( B, C, D, A, 15, 19 );
+#undef OP
+
+        // round 2
+#define OP(a,b,c,d,k,s) a = rotL<s>( a + G( b, c, d ) + X[k] + 0x5A827999 )
+        OP( A, B, C, D,  0,  3 ); OP( D, A, B, C,  4,  5 ); OP( C, D, A, B,  8,  9 ); OP( B, C, D, A, 12, 13 );
+        OP( A, B, C, D,  1,  3 ); OP( D, A, B, C,  5,  5 ); OP( C, D, A, B,  9,  9 ); OP( B, C, D, A, 13, 13 );
+        OP( A, B, C, D,  2,  3 ); OP( D, A, B, C,  6,  5 ); OP( C, D, A, B, 10,  9 ); OP( B, C, D, A, 14, 13 );
+        OP( A, B, C, D,  3,  3 ); OP( D, A, B, C,  7,  5 ); OP( C, D, A, B, 11,  9 ); OP( B, C, D, A, 15, 13 );
+#undef OP
+
+        // round 3
+#define OP(a,b,c,d,k,s) a = rotL<s>( a + H( b, c, d ) + X[k] + 0x6ED9EBA1 )
+        OP( A, B, C, D,  0,  3 ); OP( D, A, B, C,  8,  9 ); OP( C, D, A, B,  4, 11 ); OP( B, C, D, A, 12, 15 );
+        OP( A, B, C, D,  2,  3 ); OP( D, A, B, C, 10,  9 ); OP( C, D, A, B,  6, 11 ); OP( B, C, D, A, 14, 15 );
+        OP( A, B, C, D,  1,  3 ); OP( D, A, B, C,  9,  9 ); OP( C, D, A, B,  5, 11 ); OP( B, C, D, A, 13, 15 );
+        OP( A, B, C, D,  3,  3 ); OP( D, A, B, C, 11,  9 ); OP( C, D, A, B,  7, 11 ); OP( B, C, D, A, 15, 15 );
+#undef OP
+
+        A += AA;
+        B += BB;
+        C += CC;
+        D += DD;
+    }
+
+    magics[0] = A;
+    magics[1] = B;
+    magics[2] = C;
+    magics[3] = D;
+
+    Container res = magicsToSha<Container, 4, false>( magics );
     return res;
 }
 
