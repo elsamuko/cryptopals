@@ -304,3 +304,12 @@ void challenge4_30() {
 
     CHECK_EQ( guess, key.size() + message.size() );
 }
+
+void challenge4_31() {
+    Bytes key( bytes( "YELLOW SUBMARINE" ) );
+    Bytes text( bytes( "Text, which will be hmac'ed" ) );
+    // https://caligatio.github.io/jsSHA/
+    Bytes expected = converter::hexToBinary( "ad04d03f084ce2c18ab48ca350c08513ea08caeb" );
+
+    CHECK_EQ( crypto::hmacSha1( text, key ), expected );
+}
