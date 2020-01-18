@@ -33,10 +33,13 @@ float areEnglishSentences( const std::vector<Bytes>& sentences );
 std::vector<Bytes> fromHexFile( const std::string& filename );
 
 //! reads \p filename with newline separated lines
-std::vector<std::string> fromFile( const std::string& filename );
+std::vector<std::string> linesFromFile( const std::string& filename );
 
 //! writes \p data to \p filename
 void toFile( const std::string& filename, const Bytes& data );
+
+//! reads data from \p filename
+Bytes fromFile( const std::string& filename );
 
 //! reads \p filename with base64 content
 Bytes fromBase64File( const std::string& filename );

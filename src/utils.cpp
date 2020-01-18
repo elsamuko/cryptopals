@@ -181,7 +181,7 @@ std::vector<Bytes> utils::fromHexFile( const std::string& filename ) {
     return rv;
 }
 
-std::vector<std::string> utils::fromFile( const std::string& filename ) {
+std::vector<std::string> utils::linesFromFile( const std::string& filename ) {
     std::vector<std::string> rv;
     std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
 
@@ -400,3 +400,22 @@ void utils::logBlock( const std::string& in ) {
     LOG( out.str() );
 }
 
+Bytes utils::fromFile( const std::string& filename ) {
+    std::ifstream file( filename.c_str(), std::ios::binary | std::ios::in );
+
+    if( !file ) {
+        LOG( "Could not open " << filename << std::endl; )
+        return Bytes();
+    }
+
+    // get size
+    file.seekg( 0, std::ios::end );
+    size_t size = ( size_t ) file.tellg();
+    file.seekg( 0, std::ios::beg );
+
+    // read data
+    Bytes data( size );
+    file.read( ( char* )data.data(), size );
+
+    return data;
+}

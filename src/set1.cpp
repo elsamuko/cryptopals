@@ -179,7 +179,7 @@ void challenge1_7() {
 }
 
 void challenge1_8() {
-    std::vector<std::string> lines = utils::fromFile( "1_8.txt" );
+    std::vector<std::string> lines = utils::linesFromFile( "1_8.txt" );
     size_t blockSize = 2 * 128 / 8; // 32 chars of a hex string are 128 bit
 
     size_t suspectedLine = 0;

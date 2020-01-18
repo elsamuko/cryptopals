@@ -199,7 +199,7 @@ void challenge3_18() {
 }
 
 std::tuple<std::vector<Bytes>, std::vector<Bytes>> encryptedStrings( const std::string& filename ) {
-    const std::vector<std::string> strings  = utils::fromFile( filename );
+    const std::vector<std::string> strings  = utils::linesFromFile( filename );
 
     // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
     Bytes key = { 0x60, 0x6e, 0xeb, 0x27, 0x29, 0xb0, 0x67, 0xdc, 0xad, 0x0e, 0xa5, 0xb3, 0x87, 0xb1, 0x35, 0x52 };
