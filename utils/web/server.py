@@ -1,7 +1,7 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 
 # https://webpy.org/
-# python3.8 -m pip install web.py
+# python3 -m pip install web.py
 
 import web
 import binascii
