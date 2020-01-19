@@ -6,7 +6,9 @@
 #include "converter.hpp"
 #include "hash.hpp"
 #include "log.hpp"
-
+#include "http.hpp"
+#include "stopwatch.hpp"
+#include "threadpool.hpp"
 
 struct Crypto {
     // dd if=/dev/urandom bs=1 count=16 status=none | xxd -i -c 1000
@@ -306,10 +308,69 @@ void challenge4_30() {
 }
 
 void challenge4_31() {
-    Bytes key( bytes( "YELLOW SUBMARINE" ) );
-    Bytes text( bytes( "Text, which will be hmac'ed" ) );
+    // check hmac
     // https://caligatio.github.io/jsSHA/
-    Bytes expected = converter::hexToBinary( "ad04d03f084ce2c18ab48ca350c08513ea08caeb" );
+    {
+        Bytes key( bytes( "YELLOW SUBMARINE" ) );
+        Bytes text( bytes( "Text, which will be hmac'ed" ) );
+        Bytes expected = converter::hexToBinary( "ad04d03f084ce2c18ab48ca350c08513ea08caeb" );
+        CHECK_EQ( crypto::hmacSha1( text, key ), expected );
+    }
 
-    CHECK_EQ( crypto::hmacSha1( text, key ), expected );
+    // check server connection
+    {
+        if( !http::GET( "http://localhost:9000/ok" ) ) {
+            LOG( "./server.py 9000 2> /dev/null" );
+            return;
+        }
+
+        int status = http::GET( "http://localhost:9000/test?file=foo&signature=46b4ec586117154dacd49d664e5d63fdc88efb51" );
+        CHECK_EQ( status, 500 );
+
+        int status2 = http::GET( "http://localhost:9000/test?file=foo&signature=fa9908c7e2e1dfe6917b19ccfc04998ead09aef9" );
+        CHECK_EQ( status2, 200 );
+    }
+
+    // sha1 guess
+    Threadpool pool( 4 ); // std::chrono and/or webpy are not reliable above 4 threads :(
+    Bytes guess( 20, 0 );
+    std::mutex m;
+
+    for( size_t pos = 0; pos < guess.size(); ++pos ) {
+
+        size_t best = 0;
+        int64_t longest = 0;
+
+        for( size_t i = 0; i < 256; ++i ) {
+            pool.add( [&, pos, i] {
+
+                Bytes copy = guess;
+                copy[pos] = i;
+
+                StopWatch watch;
+                watch.start();
+                http::GET( "http://localhost:9000/test?file=foo&signature=" + converter::binaryToHex( copy ) );
+                auto ns = watch.stop();
+
+                m.lock();
+
+                if( ns > longest ) {
+                    longest = ns;
+                    best = i;
+                }
+
+                m.unlock();
+            } );
+        }
+
+        pool.waitForJobs();
+
+        guess[pos] = best;
+        LOG_DEBUG( longest / 1000000 );
+        LOG_DEBUG( converter::binaryToHex( guess ) );
+    }
+
+    CHECK_EQ( "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9", converter::binaryToHex( guess ) );
+    int status = http::GET( "http://localhost:9000/test?file=foo&signature=" + converter::binaryToHex( guess ) );
+    CHECK_EQ( status, 200 );
 }
