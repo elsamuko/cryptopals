@@ -9,8 +9,11 @@
 class Threadpool {
     public:
         using Job = std::function<void()>;
-        Threadpool() {
-            size_t threads = std::thread::hardware_concurrency();
+        Threadpool( size_t threads = 0 ) {
+
+            if( !threads ) {
+                threads = std::thread::hardware_concurrency();
+            }
 
             while( threads-- ) {
                 workers.emplace_back( [this] {
@@ -22,6 +25,12 @@ class Threadpool {
                         }
                     }
                 } );
+            }
+        }
+
+        void waitForJobs() {
+            while( this->count ) {
+                std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
             }
         }
 
