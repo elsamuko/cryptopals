@@ -333,6 +333,7 @@ void challenge4_31() {
 
     // sha1 guess
     Threadpool pool( 4 ); // std::chrono and/or webpy are not reliable above 4 threads :(
+    std::string expected = "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9";
     Bytes guess( 20, 0 );
     std::mutex m;
 
@@ -367,10 +368,17 @@ void challenge4_31() {
 
         guess[pos] = best;
         LOG_DEBUG( longest / 1000000 );
-        LOG( converter::binaryToHex( guess ) );
+        std::string current = converter::binaryToHex( guess ).substr( 0, 2 * pos );
+        LOG( current );
+
+        if( expected.find( current ) == std::string::npos ) {
+            LOG( "Guess is off at pos " << pos );
+            return;
+        }
+
     }
 
-    CHECK_EQ( "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9", converter::binaryToHex( guess ) );
+    CHECK_EQ( expected, converter::binaryToHex( guess ) );
     int status = http::GET( "http://localhost:9000/test?file=foo&signature=" + converter::binaryToHex( guess ) );
     CHECK_EQ( status, 200 );
 }
