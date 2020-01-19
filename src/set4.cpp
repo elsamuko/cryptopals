@@ -368,7 +368,7 @@ void challenge4_31() {
 
         guess[pos] = best;
         LOG_DEBUG( longest / 1000000 );
-        std::string current = converter::binaryToHex( guess ).substr( 0, 2 * pos );
+        std::string current = converter::binaryToHex( guess ).substr( 0, 2 * ( pos + 1 ) );
         LOG( current );
 
         if( expected.find( current ) == std::string::npos ) {
