@@ -367,7 +367,7 @@ void challenge4_31() {
 
         guess[pos] = best;
         LOG_DEBUG( longest / 1000000 );
-        LOG_DEBUG( converter::binaryToHex( guess ) );
+        LOG( converter::binaryToHex( guess ) );
     }
 
     CHECK_EQ( "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9", converter::binaryToHex( guess ) );
