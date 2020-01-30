@@ -27,7 +27,7 @@ inline Bytes get( const size_t& size ) {
 #elif _WIN32
     bool rv = 0 == ::BCryptGenRandom( nullptr, buffer.data(), buffer.size(), BCRYPT_USE_SYSTEM_PREFERRED_RNG );
 #elif __linux__
-    bool rv = size == getrandom( buffer.data(), buffer.size(), 0 );
+    bool rv = size == ( size_t )getrandom( buffer.data(), buffer.size(), 0 );
 #endif
 
     if( !rv ) {
