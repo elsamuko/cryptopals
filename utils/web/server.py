@@ -14,6 +14,7 @@ urls = (
     '/ok', 'Ok',
     '/error', 'Error',
     '/test', 'Test',
+    '/short', 'Short',
 )
 
 # allow functions above
@@ -38,15 +39,24 @@ class Error:
 
 
 class Test:
-    '''checks hash'''
+    '''checks hash with 50 ms compare'''
 
     def GET(self):
         data = web.input()
-        if crypto.check(data.file, data.signature):
+        if crypto.check(data.file, data.signature,50):
             return 'OK'
         else:
             raise web.internalerror(' ')
 
+class Short:
+    '''checks hash with 5ms compare'''
+
+    def GET(self):
+        data = web.input()
+        if crypto.check(data.file, data.signature,5):
+            return 'OK'
+        else:
+            raise web.internalerror(' ')
 
 if __name__ == "__main__":
     app.run()
