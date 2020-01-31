@@ -2,6 +2,8 @@
 
 # https://webpy.org/
 # python3 -m pip install web.py
+# or
+# sudo apt install python3-webpy python3-six
 
 import web
 import binascii
