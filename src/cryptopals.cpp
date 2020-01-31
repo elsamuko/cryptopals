@@ -52,6 +52,7 @@ int main( int argc, char* argv[] ) {
         { "4.29", challenge4_29 },
         { "4.30", challenge4_30 },
         { "4.31", challenge4_31 },
+        { "4.32", challenge4_32 },
     };
 
     StopWatch sw;

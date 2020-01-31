@@ -71,6 +71,17 @@ std::string generateGETRequest( const std::string& userdata );
 //! splits string into 16 bytes and logs them
 void logBlock( const std::string& in );
 
+//! \returns printf style string
+template <typename ... Args>
+std::string format( const char* format, Args const& ... args ) {
+
+    size_t size = snprintf( nullptr, 0, format, args... );
+    std::string text( size, '\0' );
+    snprintf( text.data(), text.size() + 1, format, args... );
+
+    return text;
+}
+
 }
 
 Bytes operator+( const Bytes& first, const Bytes& second );

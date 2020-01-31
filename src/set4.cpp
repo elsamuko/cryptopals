@@ -1,5 +1,7 @@
 #include "set4.hpp"
 
+#include <fstream>
+
 #include "utils.hpp"
 #include "crypto.hpp"
 #include "random.hpp"
@@ -307,6 +309,72 @@ void challenge4_30() {
     CHECK_EQ( guess, key.size() + message.size() );
 }
 
+// view with
+// xmgrace -legend load times_*
+void dump( const std::string& filename, const size_t val, const size_t& ns ) {
+    std::ofstream of( filename, std::ios::out | std::ios::binary | std::ios::app );
+    of << val << " " << ( ns / 1000000 ) << std::endl;
+}
+
+Bytes guessHash( const std::string& path, const size_t iters = 1, const size_t threads = 4 ) {
+    // sha1 guess
+    Threadpool pool( threads );
+    std::string expected = "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9";
+    Bytes guess( 20, 0 );
+    std::mutex m;
+
+    for( size_t pos = 0; pos < guess.size(); ++pos ) {
+
+        std::string filename = utils::format( "times_%02i.txt", pos );
+        std::remove( filename.c_str() );
+
+        std::array<size_t, 256> times;
+
+        for( size_t i = 0; i < 256; ++i ) {
+            pool.add( [&, pos, i] {
+
+                Bytes copy = guess;
+                // warm up run
+                http::GET( path + converter::binaryToHex( copy ) );
+                copy[pos] = i;
+
+                StopWatch watch;
+                watch.start();
+
+                for( size_t i = 0; i < iters; ++i ) {
+                    http::GET( path + converter::binaryToHex( copy ) );
+                }
+
+                auto ns = watch.stop();
+
+                m.lock();
+                dump( filename, i, ns );
+                times[i] = ns;
+                m.unlock();
+            } );
+        }
+
+        pool.waitForJobs();
+
+        auto iter = std::max_element( times.cbegin(), times.cend() );
+        size_t best = iter - times.cbegin();
+
+        guess[pos] = best;
+        LOG_DEBUG( "B : " << best );
+        LOG_DEBUG( "T : " << ( *iter / 1000000 ) );
+        std::string current = converter::binaryToHex( guess ).substr( 0, 2 * ( pos + 1 ) );
+        LOG( current );
+
+        if( expected.find( current ) == std::string::npos ) {
+            LOG( "Guess is off at pos " << pos );
+            return guess;
+        }
+    }
+
+    CHECK_EQ( expected, converter::binaryToHex( guess ) );
+    return guess;
+}
+
 void challenge4_31() {
     // check hmac
     // https://caligatio.github.io/jsSHA/
@@ -317,6 +385,8 @@ void challenge4_31() {
         CHECK_EQ( crypto::hmacSha1( text, key ), expected );
     }
 
+    std::string prefix = "http://localhost:9000/test?file=foo&signature=";
+
     // check server connection
     {
         if( !http::GET( "http://localhost:9000/ok" ) ) {
@@ -324,61 +394,22 @@ void challenge4_31() {
             return;
         }
 
-        int status = http::GET( "http://localhost:9000/test?file=foo&signature=46b4ec586117154dacd49d664e5d63fdc88efb51" );
+        int status = http::GET( prefix + "46b4ec586117154dacd49d664e5d63fdc88efb51" );
         CHECK_EQ( status, 500 );
 
-        int status2 = http::GET( "http://localhost:9000/test?file=foo&signature=fa9908c7e2e1dfe6917b19ccfc04998ead09aef9" );
+        int status2 = http::GET( prefix + "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9" );
         CHECK_EQ( status2, 200 );
     }
 
-    // sha1 guess
-    Threadpool pool( 4 ); // std::chrono and/or webpy are not reliable above 4 threads :(
-    std::string expected = "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9";
-    Bytes guess( 20, 0 );
-    std::mutex m;
+    Bytes guess = guessHash( prefix );
+    int status = http::GET( prefix + converter::binaryToHex( guess ) );
+    CHECK_EQ( status, 200 );
+}
 
-    for( size_t pos = 0; pos < guess.size(); ++pos ) {
-
-        size_t best = 0;
-        int64_t longest = 0;
-
-        for( size_t i = 0; i < 256; ++i ) {
-            pool.add( [&, pos, i] {
-
-                Bytes copy = guess;
-                copy[pos] = i;
-
-                StopWatch watch;
-                watch.start();
-                http::GET( "http://localhost:9000/test?file=foo&signature=" + converter::binaryToHex( copy ) );
-                auto ns = watch.stop();
-
-                m.lock();
-
-                if( ns > longest ) {
-                    longest = ns;
-                    best = i;
-                }
-
-                m.unlock();
-            } );
-        }
-
-        pool.waitForJobs();
-
-        guess[pos] = best;
-        LOG_DEBUG( longest / 1000000 );
-        std::string current = converter::binaryToHex( guess ).substr( 0, 2 * ( pos + 1 ) );
-        LOG( current );
-
-        if( expected.find( current ) == std::string::npos ) {
-            LOG( "Guess is off at pos " << pos );
-            return;
-        }
-
-    }
-
-    CHECK_EQ( expected, converter::binaryToHex( guess ) );
-    int status = http::GET( "http://localhost:9000/test?file=foo&signature=" + converter::binaryToHex( guess ) );
+void challenge4_32() {
+    std::string prefix = "http://localhost:9000/short?file=foo&signature=";
+    // run with 10 guesses and single threaded for reliable results
+    Bytes guess = guessHash( prefix, 10, 1 );
+    int status = http::GET( prefix + converter::binaryToHex( guess ) );
     CHECK_EQ( status, 200 );
 }
