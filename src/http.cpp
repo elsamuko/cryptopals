@@ -51,7 +51,7 @@ int http::GET( const std::string& url ) {
         sockaddr_in server;
         server.sin_family = AF_INET;
         server.sin_port = endian_reverse( 9000 );
-        server.sin_addr.s_addr = 0x100007f; // 127.0.0.1
+        server.sin_addr.s_addr = 0x0100007f; // 127.0.0.1
 
         CHECK_RC( connect( sockfd, ( struct sockaddr* )&server, sizeof( server ) ) );
         ON_EXIT( shutdown( sockfd, SHUT_RDWR ) );
