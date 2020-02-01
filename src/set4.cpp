@@ -311,9 +311,12 @@ void challenge4_30() {
 
 // view with
 // xmgrace -legend load times_*
-void dump( const std::string& filename, const size_t val, const size_t& ns ) {
+void dump( const std::string& filename, const std::array<size_t, 256>& times ) {
     std::ofstream of( filename, std::ios::out | std::ios::binary | std::ios::app );
-    of << val << " " << ( ns / 1000000 ) << std::endl;
+
+    for( size_t i = 0; i < times.size(); ++i ) {
+        of << i << " " << ( times[i] / 1000000 ) << std::endl;
+    }
 }
 
 Bytes guessHash( const std::string& path, const size_t iters = 1, const size_t threads = 4 ) {
@@ -321,7 +324,6 @@ Bytes guessHash( const std::string& path, const size_t iters = 1, const size_t t
     Threadpool pool( threads );
     std::string expected = "fa9908c7e2e1dfe6917b19ccfc04998ead09aef9";
     Bytes guess( 20, 0 );
-    std::mutex m;
 
     for( size_t pos = 0; pos < guess.size(); ++pos ) {
 
@@ -341,21 +343,22 @@ Bytes guessHash( const std::string& path, const size_t iters = 1, const size_t t
                 StopWatch watch;
                 watch.start();
 
-                for( size_t i = 0; i < iters; ++i ) {
+                for( auto&& ab : Bytes( iters ) ) {
+                    ( void )ab;
                     http::GET( path + converter::binaryToHex( copy ) );
                 }
 
                 auto ns = watch.stop();
-
-                m.lock();
-                dump( filename, i, ns );
                 times[i] = ns;
-                m.unlock();
             } );
         }
 
         pool.waitForJobs();
 
+        // log to file to view with xmgrace
+        dump( filename, times );
+
+        // find largest duration
         auto iter = std::max_element( times.cbegin(), times.cend() );
         size_t best = iter - times.cbegin();
 
@@ -407,6 +410,13 @@ void challenge4_31() {
 }
 
 void challenge4_32() {
+
+    // check server connection
+    if( !http::GET( "http://localhost:9000/ok" ) ) {
+        LOG( "./server.py 9000 2> /dev/null" );
+        return;
+    }
+
     std::string prefix = "http://localhost:9000/short?file=foo&signature=";
     // run with 10 guesses and single threaded for reliable results
     Bytes guess = guessHash( prefix, 10, 1 );
