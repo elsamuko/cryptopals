@@ -35,14 +35,16 @@ Bytes converter::hexToBinary( const std::string& hex ) {
 
 std::string converter::binaryToBase64( const Bytes& binary ) {
 
+    if( binary.empty() ) { return std::string(); }
+
     static const char table64[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     size_t size   = binary.size();
     size_t steps  = size / 3;
-    size_t size64 = size * 4 / 3;
+    size_t size64 = steps * 4;
     size_t rest   = size % 3;
 
-    std::string base64( size64 + 4 * rest, '\0' );
+    std::string base64( size64 + ( rest ? 4 : 0 ), '\0' );
 
     for( size_t i = 0; i < steps; ++i ) {
         int a = ( ( ( binary[3 * i + 0] ) & 0b11111100 ) >> 2 );

@@ -17,6 +17,13 @@ void challenge1_1() {
     std::string expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
     std::string calculated = converter::hexToBase64( hex );
     CHECK_EQ( expected, calculated );
+
+
+    CHECK_EQ( "", converter::binaryToBase64( bytes( "" ) ) );
+    CHECK_EQ( "MQ==", converter::binaryToBase64( bytes( "1" ) ) );
+    CHECK_EQ( "MTI=", converter::binaryToBase64( bytes( "12" ) ) );
+    CHECK_EQ( "MTIz", converter::binaryToBase64( bytes( "123" ) ) );
+    CHECK_EQ( "MTIzNA==", converter::binaryToBase64( bytes( "1234" ) ) );
 }
 
 void challenge1_2() {
