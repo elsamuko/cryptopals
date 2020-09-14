@@ -17,4 +17,12 @@ void challenge5_33() {
     int s2 = ( int )std::pow( A, b ) % p;
 
     CHECK_EQ( s, s2 );
+
+    CHECK_EQ( BigNum( 2 ) + BigNum( 3 ), BigNum( 5 ) );
+    CHECK_EQ( BigNum::fromHex( "ff" ) + BigNum::fromHex( "1" ), BigNum::fromHex( "0001" ) );
+    CHECK_EQ( BigNum::fromHex( "f" ) + BigNum( 1 ), BigNum::fromHex( "1000" ) );
+
+    CHECK_EQ( BigNum( 2 ) * BigNum( 8 ), BigNum( 16 ) );
+    CHECK_EQ( BigNum( 333 ) * BigNum( 6 ), BigNum( 1998 ) );
+    CHECK_EQ( BigNum( 333 ) * BigNum( 333 ), BigNum( 110889 ) );
 }
