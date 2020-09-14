@@ -30,6 +30,11 @@ Bytes converter::hexToBinary( const std::string& hex ) {
         binary[i] =  lower + 16 * higher;
     }
 
+    if( hex.size() % 2 ) {
+        uint8_t lower  = static_cast<uint8_t>( parseHex( hex.back() ) );
+        binary.emplace_back( lower );
+    }
+
     return binary;
 }
 
