@@ -23,6 +23,7 @@ class BigNum {
         friend std::ostream& operator<<( std::ostream& os, const BigNum& num );
         friend BigNum operator+( const BigNum&, const BigNum& );
         friend BigNum operator*( const BigNum&, const BigNum& );
+        friend BigNum operator%( const BigNum&, const BigNum& );
         friend bool operator>( const BigNum&, const BigNum& );
         friend bool operator<( const BigNum&, const BigNum& );
 
@@ -51,6 +52,11 @@ class BigNum {
             return *this;
         }
 
+        BigNum& operator %=( const BigNum& b ) {
+            *this = mod( *this, b );
+            return *this;
+        }
+
         bool isNull() {
             for( const Byte& b : places ) {
                 if( b != 0 ) { return false; }
@@ -75,6 +81,9 @@ BigNum operator*( const BigNum& left, const BigNum& right ) {
     return BigNum::mult( left, right );
 }
 
+BigNum operator%( const BigNum& left, const BigNum& right ) {
+    return BigNum::mod( left, right );
+}
 
 bool operator>( const BigNum& left, const BigNum& right ) {
     return BigNum::bigger( left, right );
