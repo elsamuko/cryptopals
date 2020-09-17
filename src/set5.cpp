@@ -25,4 +25,8 @@ void challenge5_33() {
     CHECK_EQ( BigNum( 2 ) * BigNum( 8 ), BigNum( 16 ) );
     CHECK_EQ( BigNum( 333 ) * BigNum( 6 ), BigNum( 1998 ) );
     CHECK_EQ( BigNum( 333 ) * BigNum( 333 ), BigNum( 110889 ) );
+
+    CHECK( BigNum( 333 ) > BigNum( 1 ) );
+    CHECK( BigNum::fromHex( "121" ) > BigNum::fromHex( "12" ) );
+    CHECK( BigNum::fromHex( "123" ) > BigNum::fromHex( "122" ) );
 }
