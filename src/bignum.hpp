@@ -23,11 +23,13 @@ class BigNum {
         friend std::ostream& operator<<( std::ostream& os, const BigNum& num );
         friend BigNum operator+( const BigNum&, const BigNum& );
         friend BigNum operator*( const BigNum&, const BigNum& );
+        friend bool operator>( const BigNum&, const BigNum& );
 
         static BigNum mult( const BigNum& left, const BigNum& right );
         static BigNum bitshift( const BigNum& in, const size_t& bits );
         static BigNum mod( const BigNum& base, const BigNum& modulo );
         static BigNum add( const BigNum& left, const BigNum& right );
+        static bool bigger( const BigNum& left, const BigNum& right );
         static bool equals( const BigNum& left, const BigNum& right );
 
         bool operator ==( const BigNum& b ) const {
@@ -71,6 +73,11 @@ BigNum operator*( const BigNum& left, const BigNum& right ) {
     return BigNum::mult( left, right );
 }
 
+
+bool operator>( const BigNum& left, const BigNum& right ) {
+    return BigNum::bigger( left, right );
+}
+
 BigNum BigNum::add( const BigNum& left, const BigNum& right ) {
     bool leftIsBigger = left.places.size() > right.places.size();
     BigNum res = leftIsBigger ? left : right;
@@ -106,6 +113,20 @@ BigNum BigNum::add( const BigNum& left, const BigNum& right ) {
     }
 
     return res;
+}
+
+bool BigNum::bigger( const BigNum& left, const BigNum& right ) {
+    bool leftIsBigger = left.places.size() > right.places.size();
+    const BigNum& bigger  = leftIsBigger ? left : right;
+    const BigNum& smaller = leftIsBigger ? right : left;
+
+    for( size_t i = smaller.places.size(); i < bigger.places.size(); i++ ) {
+        if( bigger.places[i] != 0 ) { return leftIsBigger; }
+    }
+
+    int cmp = memcmp( left.places.data(), right.places.data(), smaller.places.size() );
+
+    return cmp > 0;
 }
 
 bool BigNum::equals( const BigNum& left, const BigNum& right ) {
