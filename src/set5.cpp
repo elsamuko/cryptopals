@@ -29,4 +29,8 @@ void challenge5_33() {
     CHECK( BigNum( 333 ) > BigNum( 1 ) );
     CHECK( BigNum::fromHex( "121" ) > BigNum::fromHex( "12" ) );
     CHECK( BigNum::fromHex( "123" ) > BigNum::fromHex( "122" ) );
+
+    CHECK( BigNum( 1 ) < BigNum( 333 ) );
+    CHECK( BigNum::fromHex( "12" ) < BigNum::fromHex( "121" ) );
+    CHECK( BigNum::fromHex( "122" ) < BigNum::fromHex( "123" ) );
 }
