@@ -5,6 +5,7 @@
 #include <cstring>
 #include <bitset>
 #include <algorithm>
+#include <stdexcept>
 
 #include <converter.hpp>
 
@@ -31,6 +32,7 @@ class BigNum {
         static BigNum bitshift( const BigNum& in, const size_t& bits );
         static BigNum mod( const BigNum& base, const BigNum& modulo );
         static BigNum add( const BigNum& left, const BigNum& right );
+        static BigNum subtract( const BigNum& left, const BigNum& right ) noexcept( false );
         static bool bigger( const BigNum& left, const BigNum& right );
         static bool smaller( const BigNum& left, const BigNum& right );
         static bool equals( const BigNum& left, const BigNum& right );
@@ -126,6 +128,20 @@ BigNum BigNum::add( const BigNum& left, const BigNum& right ) {
     if( carry > 0 ) {
         res.places.emplace_back( carry );
     }
+
+    return res;
+}
+
+//! subtracts \param right from \param left
+//! throws exception if \param right is bigger than \param left
+BigNum BigNum::subtract( const BigNum& left, const BigNum& right ) {
+    bool leftIsBigger = left.places.size() > right.places.size();
+
+    if( !leftIsBigger ) { throw std::range_error( "subtract: right > left" ); }
+
+    BigNum res = left;
+
+    // ...
 
     return res;
 }
