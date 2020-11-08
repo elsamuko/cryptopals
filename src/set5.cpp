@@ -33,6 +33,10 @@ void challenge5_33() {
     CHECK_EQ( BigNum::fromHex( "ff" ) + BigNum::fromHex( "1" ), BigNum::fromHex( "0001" ) );
     CHECK_EQ( BigNum::fromHex( "f" ) + BigNum( 1 ), BigNum::fromHex( "1000" ) );
 
+    CHECK_EQ( BigNum( 5 ) - BigNum( 3 ), BigNum( 2 ) );
+    CHECK_EQ( BigNum::fromHex( "0001" ) - BigNum::fromHex( "1" ), BigNum::fromHex( "ff" ) );
+    CHECK_EQ( BigNum::fromHex( "1000" ) - BigNum( 1 ), BigNum::fromHex( "f" ) );
+
     CHECK_EQ( BigNum( 2 ) * BigNum( 8 ), BigNum( 16 ) );
     CHECK_EQ( BigNum( 333 ) * BigNum( 6 ), BigNum( 1998 ) );
     CHECK_EQ( BigNum( 333 ) * BigNum( 333 ), BigNum( 110889 ) );
@@ -44,4 +48,8 @@ void challenge5_33() {
     CHECK( BigNum( 1 ) < BigNum( 333 ) );
     CHECK( BigNum::fromHex( "12" ) < BigNum::fromHex( "121" ) );
     CHECK( BigNum::fromHex( "122" ) < BigNum::fromHex( "123" ) );
+    CHECK( BigNum( 123 ) < BigNum( 123456789 ) );
+
+    CHECK_EQ( BigNum( 8 ) % BigNum( 5 ), BigNum( 3 ) );
+    CHECK_EQ( BigNum( 123456789 ) % BigNum( 123 ), BigNum( 90 ) );
 }
