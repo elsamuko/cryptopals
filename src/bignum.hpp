@@ -298,6 +298,28 @@ BigNum BigNum::mult( const BigNum& left, const BigNum& right ) {
 
 BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
 
+    if( base < modulo ) { return base; }
+
+    BigNum sub = modulo;
+    BigNum rest = base;
+
+    int shift = 0;
+
+    // search biggest modulo << shift, which is smaller than base
+    while( sub < base ) {
+        shift++;
+        sub = BigNum::bitshift( modulo, shift );
+    }
+
+    while( shift-- ) {
+        sub = BigNum::bitshift( modulo, shift );
+
+        if( rest > sub ) {
+            rest = rest - sub;
+        }
+    }
+
+    return rest;
 }
 
 //def power_mod(b, e, m):
