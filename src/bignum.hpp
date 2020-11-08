@@ -155,9 +155,15 @@ bool BigNum::bigger( const BigNum& left, const BigNum& right ) {
         if( bigger.places[i] != 0 ) { return leftIsBigger; }
     }
 
-    int cmp = memcmp( left.places.data(), right.places.data(), smaller.places.size() );
+    size_t i = smaller.places.size();
 
-    return cmp > 0;
+    while( i-- ) {
+        if( left.places[i] > right.places[i] ) { return true; }
+
+        if( left.places[i] < right.places[i] ) { return false; }
+    }
+
+    return false;
 }
 
 bool BigNum::smaller( const BigNum& left, const BigNum& right ) {
@@ -169,9 +175,15 @@ bool BigNum::smaller( const BigNum& left, const BigNum& right ) {
         if( bigger.places[i] != 0 ) { return !leftIsBigger; }
     }
 
-    int cmp = memcmp( left.places.data(), right.places.data(), smaller.places.size() );
+    size_t i = smaller.places.size();
 
-    return cmp < 0;
+    while( i-- ) {
+        if( left.places[i] < right.places[i] ) { return true; }
+
+        if( left.places[i] > right.places[i] ) { return false; }
+    }
+
+    return false;
 }
 
 bool BigNum::equals( const BigNum& left, const BigNum& right ) {
