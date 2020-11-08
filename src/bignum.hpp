@@ -23,6 +23,7 @@ class BigNum {
         }
         friend std::ostream& operator<<( std::ostream& os, const BigNum& num );
         friend BigNum operator+( const BigNum&, const BigNum& );
+        friend BigNum operator-( const BigNum&, const BigNum& );
         friend BigNum operator*( const BigNum&, const BigNum& );
         friend BigNum operator%( const BigNum&, const BigNum& );
         friend bool operator>( const BigNum&, const BigNum& );
@@ -77,6 +78,10 @@ std::ostream& operator<<( std::ostream& os, const BigNum& num ) {
 
 BigNum operator+( const BigNum& left, const BigNum& right ) {
     return BigNum::add( left, right );
+}
+
+BigNum operator-( const BigNum& left, const BigNum& right ) {
+    return BigNum::subtract( left, right );
 }
 
 BigNum operator*( const BigNum& left, const BigNum& right ) {
@@ -135,13 +140,33 @@ BigNum BigNum::add( const BigNum& left, const BigNum& right ) {
 //! subtracts \param right from \param left
 //! throws exception if \param right is bigger than \param left
 BigNum BigNum::subtract( const BigNum& left, const BigNum& right ) {
-    bool leftIsBigger = left.places.size() > right.places.size();
 
-    if( !leftIsBigger ) { throw std::range_error( "subtract: right > left" ); }
+    if( right > left ) { throw std::range_error( "subtract: right > left" ); }
 
     BigNum res = left;
+    Byte carry = 0;
+    size_t i = 0;
 
-    // ...
+    for( ; i < res.places.size() && i < right.places.size(); ++i ) {
+        int16_t diff = res.places[i] - right.places[i] - carry;
+
+        if( diff < 0 ) { carry = 1; diff += 256; }
+        else { carry = 0; }
+
+        res.places[i] = diff;
+    }
+
+    // offset carry
+    if( carry > 0 ) {
+        for( ; i < res.places.size(); ++i ) {
+            int16_t diff = res.places[i] - carry;
+
+            if( diff < 0 ) { carry = 1; diff += 256; }
+            else { carry = 0; }
+
+            res.places[i] = diff;
+        }
+    }
 
     return res;
 }
