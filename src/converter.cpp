@@ -2,8 +2,7 @@
 
 #include <map>
 
-namespace  {
-uint8_t parseHex( const char& hex ) {
+uint8_t converter::parseHex( const char& hex ) {
     if( hex >= '0' && hex <= '9' ) {
         return static_cast<uint8_t>( hex - '0' );
     }
@@ -17,7 +16,6 @@ uint8_t parseHex( const char& hex ) {
     }
 
     return 0;
-}
 }
 
 Bytes converter::hexToBinary( const std::string& hex ) {

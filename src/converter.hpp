@@ -3,6 +3,7 @@
 #include "types.hpp"
 
 namespace converter {
+uint8_t parseHex( const char& hex );
 Bytes hexToBinary( const std::string& hex );
 std::string binaryToHex( const Bytes& bytes );
 
