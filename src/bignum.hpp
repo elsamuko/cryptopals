@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "converter.hpp"
+#include "log.hpp"
 
 // class to calculate with big unsigned integrals
 class BigNum {
@@ -77,6 +78,7 @@ class BigNum {
         static BigNum mult( const BigNum& left, const BigNum& right );
         static BigNum bitshift( const BigNum& in, const int64_t& bits );
         static BigNum mod( const BigNum& base, const BigNum& modulo );
+        static BigNum modpow( BigNum base, BigNum power, const BigNum& modulo );
         static BigNum add( const BigNum& left, const BigNum& right );
         static BigNum subtract( const BigNum& left, const BigNum& right ) noexcept( false );
         static bool bigger( const BigNum& left, const BigNum& right );
@@ -420,9 +422,31 @@ BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
 
 //    return x
 
-BigNum modpow( const BigNum& base, const BigNum& power, const BigNum& modulo ) {
-    BigNum  result;
+BigNum BigNum::modpow( BigNum base, BigNum power, const BigNum& modulo ) {
+    BigNum x( 1 );
+    BigNum null( 0 );
 
+    LOG( "modulo= 0x" << modulo );
+    LOG( "base  = 0x" << base );
+    LOG( "power = 0x" << power );
+    LOG( "x     = 0x" << x );
+    LOG( "" );
 
-    return base;
+    while( power > null ) {
+        if( power % 2 != null ) {
+            x = base * x;
+            x = x % modulo;
+        }
+
+        base = base * base;
+        base = base % modulo;
+        power = BigNum::bitshift( power, -1 );
+
+        LOG( "base  = 0x" << base );
+        LOG( "power = 0x" << power );
+        LOG( "x     = 0x" << x );
+        LOG( "" );
+    }
+
+    return x;
 }
