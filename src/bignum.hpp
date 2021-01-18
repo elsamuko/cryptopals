@@ -7,14 +7,59 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include <converter.hpp>
+#include "converter.hpp"
 
 // class to calculate with big unsigned integrals
 class BigNum {
+    private:
+        // read RTL hex into binary
+        static Bytes hexToBinary( const std::string& hex ) {
+            size_t size   = hex.size() / 2;
+            Bytes binary;
+            binary.reserve( size );
+
+            if( size ) {
+                size_t pos = hex.size();
+
+                while( pos > 1 ) {
+                    pos -= 2;
+                    uint8_t lower  = static_cast<uint8_t>( converter::parseHex( hex[pos + 1] ) );
+                    uint8_t higher = static_cast<uint8_t>( converter::parseHex( hex[pos] ) );
+                    binary.emplace_back( lower + 16 * higher );
+                }
+            }
+
+            if( hex.size() % 2 ) {
+                uint8_t lower  = static_cast<uint8_t>( converter::parseHex( hex.front() ) );
+                binary.emplace_back( lower );
+            }
+
+            return binary;
+        }
+
+        static std::string binaryToHex( const Bytes& bytes ) {
+            static const char table16[17] = "0123456789abcdef";
+
+            std::string rv( 2 * bytes.size(), '\0' );
+            size_t pos = bytes.size();
+            size_t size = bytes.size();
+
+            while( pos ) {
+                --pos;
+                int a = ( bytes[pos] & 0b11110000 ) >> 4;
+                int b = ( bytes[pos] & 0b00001111 );
+                rv[2 * pos + 1] = table16[a];
+                rv[2 * pos + 0] = table16[b];
+            }
+
+            std::reverse( rv.begin(), rv.end() );
+            return rv;
+        }
+
     public:
         static BigNum fromHex( const std::string& hex ) {
             BigNum num;
-            num.places = converter::hexToBinary( hex );
+            num.places = BigNum::hexToBinary( hex );
             return num;
         }
         BigNum( const uint64_t& num = 0 ) {
@@ -72,7 +117,7 @@ class BigNum {
 };
 
 std::ostream& operator<<( std::ostream& os, const BigNum& num ) {
-    os << converter::binaryToHex( num.places );
+    os << BigNum::binaryToHex( num.places );
     return os;
 }
 
