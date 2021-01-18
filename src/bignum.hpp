@@ -75,7 +75,7 @@ class BigNum {
         friend bool operator<( const BigNum&, const BigNum& );
 
         static BigNum mult( const BigNum& left, const BigNum& right );
-        static BigNum bitshift( const BigNum& in, const size_t& bits );
+        static BigNum bitshift( const BigNum& in, const int64_t& bits );
         static BigNum mod( const BigNum& base, const BigNum& modulo );
         static BigNum add( const BigNum& left, const BigNum& right );
         static BigNum subtract( const BigNum& left, const BigNum& right ) noexcept( false );
@@ -270,14 +270,33 @@ bool BigNum::equals( const BigNum& left, const BigNum& right ) {
     return true;
 }
 
-BigNum BigNum::bitshift( const BigNum& in, const size_t& bits ) {
+BigNum BigNum::bitshift( const BigNum& in, const int64_t& bits ) {
+    if( bits == 0 ) { return in; }
+
     BigNum res = in;
-    size_t offset = bits / 8;
-    size_t rest = bits % 8;
-    res.places.resize( in.places.size() + offset + ( rest ? 1 : 0 ) );
+    int64_t offset = bits / 8;
+    int64_t rest = bits % 8;
+
+    bool oneLeft = false;
+
+    // change negative bitshift to positive
+    if( rest < 0 ) {
+        oneLeft = true;
+        rest += 8;
+    }
+
+    if( offset > 0 ) {
+        res.places.resize( in.places.size() + offset + ( rest ? 1 : 0 ) );
+    }
 
     // "shift" bytewise
-    std::rotate( res.places.rbegin(), res.places.rbegin() + offset, res.places.rend() );
+    if( offset > 0 ) {
+        std::shift_right( res.places.begin(), res.places.end(), offset );
+        std::fill( res.places.begin(), res.places.begin() + offset, 0 );
+    } else {
+        std::shift_left( res.places.begin(), res.places.end(), -offset );
+        std::fill( res.places.end() + offset, res.places.end(), 0 );
+    }
 
     // "shift" rest bitwise
     if( !rest ) { return res; }
@@ -314,6 +333,12 @@ BigNum BigNum::bitshift( const BigNum& in, const size_t& bits ) {
 
     res.places[0] = ( res.places[0] & bottoms[rest] ) << rest; // again take lower bits and shift up
 
+    // correct negative bitshift by one place left
+    if( oneLeft ) {
+        std::shift_left( res.places.begin(), res.places.end(), 1 );
+        res.places.back() = in.places.back() >> ( 8 - rest );
+    }
+
     return res;
 }
 
@@ -336,6 +361,11 @@ BigNum BigNum::mult( const BigNum& left, const BigNum& right ) {
 
             ++offset;
         }
+    }
+
+    // remove superfluous zeros
+    while( res.places.size() > 8 && res.places.back() == 0 ) {
+        res.places.pop_back();
     }
 
     return res;
