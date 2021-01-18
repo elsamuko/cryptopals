@@ -375,6 +375,8 @@ BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
 
     if( base < modulo ) { return base; }
 
+    if( base == modulo ) { return BigNum( 0 ); }
+
     BigNum sub = modulo;
     BigNum rest = base;
 
@@ -392,6 +394,15 @@ BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
         if( rest > sub ) {
             rest = rest - sub;
         }
+
+        if( rest == sub ) {
+            rest = rest - sub;
+        }
+    }
+
+    // remove superfluous zeros
+    while( rest.places.size() > 8 && rest.places.back() == 0 ) {
+        rest.places.pop_back();
     }
 
     return rest;
