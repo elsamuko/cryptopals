@@ -388,6 +388,10 @@ BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
     while( sub < base ) {
         shift++;
         sub = BigNum::bitshift( modulo, shift );
+
+        if( sub == base ) {
+            return BigNum( 0 );
+        }
     }
 
     while( shift-- ) {
@@ -398,7 +402,7 @@ BigNum BigNum::mod( const BigNum& base, const BigNum& modulo ) {
         }
 
         if( rest == sub ) {
-            rest = rest - sub;
+            return BigNum( 0 );
         }
     }
 
