@@ -436,12 +436,6 @@ BigNum BigNum::modpow( BigNum base, BigNum power, const BigNum& modulo ) {
     BigNum x( 1 );
     BigNum null( 0 );
 
-    LOG( "modulo= 0x" << modulo );
-    LOG( "base  = 0x" << base );
-    LOG( "power = 0x" << power );
-    LOG( "x     = 0x" << x );
-    LOG( "" );
-
     while( power > null ) {
         if( power % 2 != null ) {
             x = base * x;
@@ -451,11 +445,6 @@ BigNum BigNum::modpow( BigNum base, BigNum power, const BigNum& modulo ) {
         base = base * base;
         base = base % modulo;
         power = BigNum::bitshift( power, -1 );
-
-        LOG( "base  = 0x" << base );
-        LOG( "power = 0x" << power );
-        LOG( "x     = 0x" << x );
-        LOG( "" );
     }
 
     return x;
