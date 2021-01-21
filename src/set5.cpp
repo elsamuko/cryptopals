@@ -44,16 +44,29 @@ void challenge5_33() {
         CHECK_EQ( BigNum( 5 ) - BigNum( 3 ), BigNum( 2 ) );
         CHECK_EQ( BigNum::fromHex( "0001" ) - BigNum::fromHex( "1" ), BigNum::fromHex( "0" ) );
         CHECK_EQ( BigNum::fromHex( "1000" ) - BigNum( 1 ), BigNum::fromHex( "fff" ) );
+        CHECK_EQ( BigNum::fromHex( "eab2bc086e46208434d7c9ea583c6f319b9" ) - BigNum::fromHex( "b194f8e1ae525fd5dcfab0800000000000" ),
+                  BigNum::fromHex( "df996c7a5360fa86d7081ee2583c6f319b9" ) );
 
         CHECK_EQ( BigNum::bitshift( BigNum( 2 ), 10 ), BigNum( 2048 ) );
         CHECK_EQ( BigNum::bitshift( BigNum( 4 ), -1 ), BigNum( 2 ) );
         CHECK_EQ( BigNum::bitshift( BigNum( 3000 ), -8 ), BigNum( 11 ) );
+
+        // python -c "print('%x' % (int('1d6329f1c35ca4bfabb9f5610000000000',16)<<7))"
+        CHECK_EQ( BigNum::bitshift( BigNum::fromHex( "1d6329f1c35ca4bfabb9f5610000000000" ), 7 ), BigNum::fromHex( "eb194f8e1ae525fd5dcfab0800000000000" ) );
+
         // python -c "print('%x' % (2351399303373464486466122544523690094744975233415544072992656881240319//2))"
         CHECK_EQ( BigNum::bitshift( BigNum::fromHex( "5737df12ecacc95ff94e28463b3cd1de0c674cb5d079bd3f4c037e48ff" ), -1 ), BigNum::fromHex( "2b9bef89765664affca714231d9e68ef0633a65ae83cde9fa601bf247f" ) );
+        // python -c "print('%x' % (2351399303373464486466122544523690094744975233415544072992656881240319*2))"
+        CHECK_EQ( BigNum::bitshift( BigNum::fromHex( "5737df12ecacc95ff94e28463b3cd1de0c674cb5d079bd3f4c037e48ff" ), 1 ), BigNum::fromHex( "ae6fbe25d95992bff29c508c7679a3bc18ce996ba0f37a7e9806fc91fe" ) );
 
         CHECK_EQ( BigNum( 2 ) * BigNum( 8 ), BigNum( 16 ) );
         CHECK_EQ( BigNum( 333 ) * BigNum( 6 ), BigNum( 1998 ) );
         CHECK_EQ( BigNum( 333 ) * BigNum( 333 ), BigNum( 110889 ) );
+
+        // print('%x' % 2988348162058574136915891421498819466320163312926952423791023078876139**2)
+        BigNum big = BigNum::fromHex( "6ed80fface4df443c2e9a56155272b9004e01f5dabe5f2181a603da3eb" );
+        BigNum bigPow2 = BigNum::fromHex( "2ffe641681867b5b26fc4670b2aa49d14e621ddc6c4fe1430ca398100669898792541bcbeef603422d1be9910e5b12acea8195bba583c6f319b9" );
+        CHECK_EQ( big * big, bigPow2 );
 
         CHECK( BigNum( 333 ) > BigNum( 1 ) );
         CHECK( BigNum::fromHex( "121" ) > BigNum::fromHex( "12" ) );
@@ -64,14 +77,18 @@ void challenge5_33() {
         CHECK( BigNum::fromHex( "122" ) < BigNum::fromHex( "123" ) );
         CHECK( BigNum( 123 ) < BigNum( 123456789 ) );
 
+        // print('%x' % ((2988348162058574136915891421498819466320163312926952423791023078876139**2)%(10**40)))
+        BigNum modulo = BigNum::fromHex( "1d6329f1c35ca4bfabb9f5610000000000" );
+        CHECK_EQ( bigPow2 % modulo, BigNum::fromHex( "16f9f196f96c4d2d1c3be38683c6f319b9" ) );
+
         CHECK_EQ( BigNum( 10 ) % BigNum( 2 ), BigNum( 0 ) );
         CHECK_EQ( BigNum( 8 ) % BigNum( 5 ), BigNum( 3 ) );
         CHECK_EQ( BigNum( 123456789 ) % BigNum( 123 ), BigNum( 90 ) );
-
         CHECK_EQ( BigNum( 2 ) % BigNum( 2 ), BigNum( 0 ) );
+
         // python -c "print(pow(2, 10, 100))"
-        // CHECK_EQ( BigNum::modpow( 2, 10, 100 ), BigNum( 24 ) );
-        // CHECK_EQ( BigNum::modpow( 2, 11, 111 ), BigNum( 50 ) );
+        CHECK_EQ( BigNum::modpow( 2, 10, 100 ), BigNum( 24 ) );
+        CHECK_EQ( BigNum::modpow( 2, 11, 111 ), BigNum( 50 ) );
 
         // https://rosettacode.org/wiki/Modular_exponentiation#Python
         // python3 -c "print('%x' % 2988348162058574136915891421498819466320163312926952423791023078876139)"
