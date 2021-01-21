@@ -8,7 +8,6 @@
 #include <stdexcept>
 
 #include "converter.hpp"
-#include "log.hpp"
 
 // class to calculate with big unsigned integrals
 class BigNum {
@@ -43,7 +42,6 @@ class BigNum {
 
             std::string rv( 2 * bytes.size(), '\0' );
             size_t pos = bytes.size();
-            size_t size = bytes.size();
 
             while( pos ) {
                 --pos;
