@@ -5,33 +5,48 @@
 #include "bignum.hpp"
 
 void challenge5_33() {
+    // simple diffie-hellman
     {
-        int p = 37;
-        int g = 5;
+        BigNum p( 37 );
+        BigNum g = 5;
 
-        int a = randomnumber::get() % 37;
-        int A = ( int )std::pow( g, a ) % p;
+        BigNum a = randomnumber::get() % 37;
+        BigNum A = BigNum::modpow( g, a, p );
 
-        int b = randomnumber::get() % 37;
-        int B = ( int )std::pow( g, b ) % p;
+        BigNum b = randomnumber::get() % 37;
+        BigNum B = BigNum::modpow( g, b, p );
 
-        int s = ( int )std::pow( B, a ) % p;
-        int s2 = ( int )std::pow( A, b ) % p;
+        BigNum s = BigNum::modpow( B, a, p );
+        BigNum s2 = BigNum::modpow( A, b, p );
 
         CHECK_EQ( s, s2 );
     }
 
+    // large number diffie-hellman
     {
-        //        BigNum pBig = BigNum::fromHex( "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024"
-        //                                       "e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd"
-        //                                       "3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec"
-        //                                       "6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f"
-        //                                       "24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361"
-        //                                       "c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552"
-        //                                       "bb9ed529077096966d670c354e4abc9804f1746c08ca237327fff"
-        //                                       "fffffffffffff" );
-        //        BigNum gBig( 2 );
+        BigNum p = BigNum::fromHex( "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024"
+                                    "e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd"
+                                    "3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec"
+                                    "6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f"
+                                    "24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361"
+                                    "c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552"
+                                    "bb9ed529077096966d670c354e4abc9804f1746c08ca237327fff"
+                                    "fffffffffffff" );
+        BigNum g( 2 );
+        BigNum a = randomnumber::get() % 37;
+        BigNum A = BigNum::modpow( g, a, p );
 
+        BigNum b = randomnumber::get() % 37;
+        BigNum B = BigNum::modpow( g, b, p );
+
+        BigNum s = BigNum::modpow( B, a, p );
+        BigNum s2 = BigNum::modpow( A, b, p );
+
+        CHECK_EQ( s, s2 );
+    }
+
+    // BigNum tests
+    {
         CHECK_EQ( BigNum::fromHex( "0001" ), BigNum( 1 ) );
         CHECK_EQ( BigNum::fromHex( "100" ), BigNum( 256 ) );
         CHECK_EQ( BigNum::fromHex( "f0f" ), BigNum( 3855 ) );
