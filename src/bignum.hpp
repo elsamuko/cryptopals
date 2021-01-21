@@ -327,6 +327,12 @@ BigNum BigNum::bitshift( const BigNum& in, const int64_t& bits ) {
 
     size_t pos = res.places.size();
 
+    Byte top = ( ( res.places[pos - 1] & tops[rest] ) >> ( 8 - rest ) );
+
+    if( top && bits > 0 ) {
+        res.places.push_back( top );
+    }
+
     // from size-1 to 1
     while( --pos ) {
         res.places[pos] = ( ( res.places[pos] & bottoms[rest] ) << rest ) + // take lower bits and shift up
