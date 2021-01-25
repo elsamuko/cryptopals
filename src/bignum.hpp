@@ -270,6 +270,36 @@ bool BigNum::equals( const BigNum& left, const BigNum& right ) {
     return true;
 }
 
+// via ranges_algo.h
+namespace std {
+void shift_left( Bytes::iterator first, Bytes::iterator last, size_t diff ) {
+    if( diff == 0 ) {
+        return;
+    }
+
+    Bytes::iterator mid = first + diff;
+
+    if( mid == last ) {
+        return ;
+    }
+
+    std::move( std::move( mid ), std::move( last ), std::move( first ) );
+}
+void shift_right( Bytes::iterator first, Bytes::iterator last, size_t diff ) {
+    if( diff == 0 ) {
+        return;
+    }
+
+    Bytes::iterator mid = last - diff;
+
+    if( mid == first ) {
+        return ;
+    }
+
+    std::move_backward( std::move( first ), std::move( mid ), std::move( last ) );
+}
+}
+
 BigNum BigNum::bitshift( const BigNum& in, const int64_t& bits ) {
     if( bits == 0 ) { return in; }
 
